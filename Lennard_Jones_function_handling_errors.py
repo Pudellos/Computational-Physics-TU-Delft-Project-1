@@ -1,7 +1,7 @@
 import numpy as np
 import sympy as sym
 
-quiet=False #if True all prited warnings are supressed
+quiet=True #if True all prited warnings are supressed
 
 
 def k_B(N,P=10*5, V=1, T=273.15):
@@ -19,8 +19,8 @@ def k_B(N,P=10*5, V=1, T=273.15):
             print('T, N cannot be equal to zero, I return/use k_B at stp for 1 gas molecule')
         return((P*V)/T) 
 
-def LJ_potential(r_A, r_B, N, P=10*5, V=1, T=273.15, symbol_mode=False, differenciate=False):
-    '''Calculating Lennar Jones potential between particle A and B
+def LJ_potential(r, N, P=10*5, V=1, T=273.15, symbol_mode=False, differenciate=False):
+    '''Calculating Lennar Jones potential between particle 1 and 2
     
     parameters:
     r_A = position of particle A [m]
@@ -61,7 +61,7 @@ def LJ_potential(r_A, r_B, N, P=10*5, V=1, T=273.15, symbol_mode=False, differen
             print('something went from, check your inputs!')
     
     try:
-        r_abs_value=abs(r_A-r_B)
+        r_abs_value=abs(r[0]-r[1])
     except:
         if not quiet:
             print('something went wrong, check your inputs')
