@@ -9,10 +9,13 @@ class Molecule:
         self.velocity = velocity
         
 class Gas:
-    '''Class Gas, describes collection of instances of Class Molecule'''
-    def __init__(self, molecules, volume):
+    '''Class Gas, describes collection of instances of Class Molecule
+    default pressure and temperature are the stp values'''
+    def __init__(self, molecules, volume, pressure = 10*5, temperature = 273.15):
         self.molecules = molecules
-        self.volume = volume
+        self.volume = volume # [m^3]
+        self.pressure = pressure # [Pa]
+        self.temperature = temperature #[K]
     
     def positions(self):
         '''Returns positions of all gas molecules'''
@@ -32,15 +35,14 @@ class Gas:
             couples.append(couple)
         return(couples)
     
-    def lj_potentials(self, differenciate_gas=False, symbol_mode_gas=False, P_gas=10*5, V_gas=True, T_gas=273.15):
-        '''Returns Lennard Johnes potentials values corresponding to couples of molecules from output of couples_of_molecules function 
-        units: Joules
+    def lj_potentials(self, differenciate_gas=False, symbol_mode_gas=False, P_gas=True, V_gas=True, T_gas=True):
+        '''Returns Lennard Johnes potentials values corresponding to couples of molecules from output of couples_of_molecules function
         
         use help(main_module.LJ.LJ_potential) for details about parameters'''
         
         potentials=[]
         for i in self.couples_of_molecules():
-            potentials.append(LJ.LJ_potential(i,len(self.molecules),P=P_gas, V=self.volume, T=T_gas, symbol_mode=symbol_mode_gas, differenciate=differenciate_gas))
+            potentials.append(LJ.LJ_potential(i,len(self.molecules),P=self.pressure, V=self.volume, T=self.temperature, symbol_mode=symbol_mode_gas, differenciate=differenciate_gas))
         return(potentials)
     
     def atomic_distances(self):
@@ -50,7 +52,7 @@ class Gas:
             distances.append(abs(self.couples_of_molecules()[i][0]-self.couples_of_molecules()[i][1]))
         return(distances)
     
-    def lj_force(self,chosen,P=10*5,V=True,T=273.15):
+    def lj_force(self,chosen,P=True,V=True,T=True):
         '''Returns forces on a particle due to Lennard Johnes potential corresponding to couples of molecules from output of couples_of_molecules function
         fromula:  force = - d(potential)/dr * grad (distance between two molecules)
                 where grad (distance between two molecules) = abs(r_1 - r_2)
@@ -61,13 +63,14 @@ class Gas:
         force=0
         index=0
         for i in self.couples_of_molecules():
-            temp_potentials=self.lj_potentials(differenciate_gas=True, symbol_mode_gas=False, P_gas=P, V_gas=self.volume, T_gas=T)
+            temp_potentials=self.lj_potentials(differenciate_gas=True, symbol_mode_gas=False, P_gas=self.pressure, V_gas=self.volume, T_gas=self.temperature)
         for i in self.couples_of_molecules():
             for j in i:
                 if j==chosen:
                     force+=-1*temp_potentials[index]*self.atomic_distances()[index]
             index+=1
         return(force)
+    
     def lj_forces(self):
         '''Calculates forces on all molecules and returns them as a list'''
         forces=[]
