@@ -26,6 +26,12 @@ You will find how to include [links](https://docs.gitlab.com/ee/user/markdown.ht
 useful.
 
 ## Week 1
+10/02 and 11/02: 
+Branch 'testing' created because no permission to edit master branch.
+1) Lennard Johnes function for calculating the potential between a pair of molecules created. Two versions created, one with handling errors and exceptions and one without (version for reading fast what's going on in the code)
+2) file main_module created, contains constructors of class Molecule (describing a single molecule/atom) and Gas describing collection of instances of Molecule class. Methods added to the classes, eg to obtain position, velocity of molecules and forces experienced due to Lennard Johnes potential
+3) simulation.py file created. This is the simulation where we create molecules and enviroment (eg can specify temperature, pressure etc). Other files are imported and used by this one and run 'behind the scenes'.
+
 (due 14 February 2021, 23:59)
 
 
