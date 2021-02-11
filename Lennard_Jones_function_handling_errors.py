@@ -37,7 +37,7 @@ def LJ_potential(r, N, P=10*5, V=1, T=273.15, symbol_mode=False, differenciate=F
     if differenciate == True : derivative of Lennard Jones potential is returned 
     
     parameters used by symbol_mode:
-    sigma: float = 3.405
+    sigma: float = 3.405 [A] = 3.405e-10 [m]
     eps : float = 119.8/k_B
     r_abs : float = distance between molecules A and B
     '''
@@ -48,7 +48,7 @@ def LJ_potential(r, N, P=10*5, V=1, T=273.15, symbol_mode=False, differenciate=F
     eps = sym.Symbol('eps')
     r_abs=sym.Symbol('r_abs')
     
-    sigma_value=3.405
+    sigma_value=3.405e-10
     try:
         eps_value=119.8/k_B(N,P,V,T)
     except ZeroDivisionError:
