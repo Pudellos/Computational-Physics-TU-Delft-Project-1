@@ -11,7 +11,7 @@ class Molecule:
 class Gas:
     '''Class Gas, describes collection of instances of Class Molecule
     default pressure and temperature are the stp values'''
-    def __init__(self, molecules, volume, pressure = 10*5, temperature = 273.15):
+    def __init__(self, molecules, volume, pressure = 1e5, temperature = 273.15):
         self.molecules = molecules
         self.volume = volume # [m^3]
         self.pressure = pressure # [Pa]
