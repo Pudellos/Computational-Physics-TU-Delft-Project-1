@@ -32,6 +32,7 @@ print('derivative of Lennard Johnes potentials between those pairs:')
 print(g.lj_potentials(True))
 print()
 
+print('forces on all molecules due to other molecules')
 print(g.lj_forces())
 
 print()
@@ -74,6 +75,8 @@ print(g.lj_force(1))
 print('example: force on molecule with position = 2 due to all other molecules:')
 print(g.lj_force(2))
 
+print('force on all molecules:')
+print(g.lj_forces())
 
 print()
 print('see help(function) for detailed describtion of all parameters, how to change temperature, pressure etc of the simulation')
