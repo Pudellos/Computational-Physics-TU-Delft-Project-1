@@ -34,7 +34,12 @@ print('example: force on molecule with position = 1 due to all other molecules:'
 print(g.lj_force(1))
 print('example: force on molecule with position = 2 due to all other molecules:')
 print(g.lj_force(2))
-
 print()
+
+print('list of forces on all the molecules:')
+print(g.lj_forces())
+print()
+
+
 print('see help(function) for detailed describtion of all parameters, how to change temperature, pressure etc of the simulation')
 # print(help(g.lj_force))

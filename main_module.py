@@ -68,7 +68,12 @@ class Gas:
                     force+=-1*temp_potentials[index]*self.atomic_distances()[index]
             index+=1
         return(force)
-    
+    def lj_forces(self):
+        '''Calculates forces on all molecules and returns them as a list'''
+        forces=[]
+        for i in self.molecules:
+            forces.append(self.lj_force(i.position))
+        return(forces)
 
     
 #EXAMPLE OF CREATING CLASS INSTANCES AND USING FUNCTIONS
