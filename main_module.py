@@ -34,7 +34,7 @@ class Gas:
     def LJ_potentials(self, differenciate_gas=False, symbol_mode_gas=False, P_gas=10*5, V_gas=1, T_gas=273.15):
         '''Returns Lennard Johnes potentials values corresponding to couples of molecules from output of couples_of_molecules function
         
-        use help(LJ.LJ_potential) for details about parameters'''
+        use help(main.LJ.LJ_potential) for details about parameters'''
         
         potentials=[]
         for i in self.couples_of_molecules():
@@ -47,7 +47,7 @@ class Gas:
                 where grad (distance between two molecules) = abs(r_1 - r_2)
         chosen = choose position of particle for which you want to calculate the force 
         
-        use help(LJ_potentials) for info on paramteres
+        use help(class_instance_name.LJ_potentials) for info on paramteres
         '''
         force=0
         index=0
@@ -59,6 +59,7 @@ class Gas:
                     force+=-1*temp_potentials[index]*abs(self.couples_of_molecules()[index][0]-self.couples_of_molecules()[index][1])
             index+=1
         return(force)
+
 
     
 #EXAMPLE OF CREATING CLASS INSTANCES AND USING FUNCTIONS
