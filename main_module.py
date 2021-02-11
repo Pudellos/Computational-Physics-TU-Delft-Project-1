@@ -35,7 +35,7 @@ class Gas:
     def lj_potentials(self, differenciate_gas=False, symbol_mode_gas=False, P_gas=10*5, V_gas=True, T_gas=273.15):
         '''Returns Lennard Johnes potentials values corresponding to couples of molecules from output of couples_of_molecules function
         
-        use help(main.LJ.LJ_potential) for details about parameters'''
+        use help(main_module.LJ.LJ_potential) for details about parameters'''
         
         potentials=[]
         for i in self.couples_of_molecules():

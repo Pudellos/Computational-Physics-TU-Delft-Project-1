@@ -23,14 +23,13 @@ def LJ_potential(r, N, P=10*5, V=1, T=273.15, symbol_mode=False, differenciate=F
     '''Calculating Lennar Jones potential between particle 1 and 2
     
     parameters:
-    r_A = position of particle A [m]
-    r_B = position of particle B [m]
-    P = pressure [Pa]
-    V = volume [m^3]
-    T = temperature [K]
-    N = number of gas molecules in the simulation
-    symbol_mode = True/False
-    differenciate = True/False
+    r : np.array = positions of molecules 1 and 2 [m]
+    P : float = pressure [Pa]
+    V : float = volume [m^3]
+    T : float = temperature [K]
+    N : int = number of gas molecules in the simulation
+    symbol_mode : bool 
+    differenciate : bool
 
     how to use:
     function returns Lennard Jones potential value
@@ -38,9 +37,9 @@ def LJ_potential(r, N, P=10*5, V=1, T=273.15, symbol_mode=False, differenciate=F
     if differenciate == True : derivative of Lennard Jones potential is returned 
     
     parameters used by symbol_mode:
-    sigma = sigma
-    eps = epsilon
-    r_abs = distance between molecules A and B
+    sigma: float = 3.405
+    eps : float = 119.8/k_B
+    r_abs : float = distance between molecules A and B
     '''
     def equation(sigma,eps,r_abs):
             return((4*eps*((sigma/r_abs)**12-(sigma/r_abs)**6)))
