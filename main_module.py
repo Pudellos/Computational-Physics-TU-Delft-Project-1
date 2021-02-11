@@ -11,7 +11,7 @@ class Molecule:
 class Gas:
     '''Class Gas, describes collection of instances of Class Molecule
     default pressure and temperature are the stp values
-    molecules : int = number of gas molecules 
+    molecules : np.ndarray = array of instances of Molecule class
     volume : float = volume of simulated gas [m^3]
     pressure : float = pressure of simulated gas [Pa]
     temperature : float = temperature of simulated gas [K]'''
