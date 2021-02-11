@@ -35,6 +35,9 @@ print(g.force_due_to_LJ(1))
 print('example: force on molecule with position = 2 due to all other molecules:')
 print(g.force_due_to_LJ(2))
 
+print('distances between pairs of molecules in the simulation as given by couples_of_molecules():')
+print(g.atomic_distances())
+
 print()
 print('see help(function) for detailed describtion of all parameters, how to change temperature, pressure etc of the simulation')
 # print(help(g.force_due_to_LJ))

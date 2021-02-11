@@ -59,7 +59,13 @@ class Gas:
                     force+=-1*temp_potentials[index]*abs(self.couples_of_molecules()[index][0]-self.couples_of_molecules()[index][1])
             index+=1
         return(force)
-
+    
+    def atomic_distances(self):
+        '''returns distances between all iterated pairs of molecules in the simulation corresponding to pairs printed by couples_of_molecules() function'''
+        distances=[]
+        for i in range(len(self.couples_of_molecules())):
+            distances.append(abs(self.couples_of_molecules()[i][0]-self.couples_of_molecules()[i][1]))
+        return(distances)
 
     
 #EXAMPLE OF CREATING CLASS INSTANCES AND USING FUNCTIONS
