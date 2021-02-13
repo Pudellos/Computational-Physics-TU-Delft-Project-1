@@ -3,6 +3,7 @@ import Lennard_Jones_potential_2D as LJ
 import itertools as it
 
 
+
 def time_evolution_inside(gas,atoms,dt):
     '''evolves individual molecules of the gas
     gas: instance of class Gas
@@ -31,21 +32,24 @@ def time_evolution_inside(gas,atoms,dt):
         for i in range(len(forces)):
             ((atoms[i]).velocity)=((atoms[i]).velocity)+((1/m)*(forces[i])*dt)
             ((atoms[i]).position)=((atoms[i]).position)+(dt*(atoms[i]).velocity)
-
         temp=[]
         for i in atoms: 
             temp.append(Molecule(i.position,i.velocity))
+
     return(temp)
 
-def time_evolution(gas,N,dt):
+def time_evolution(gas,N,dt,periodic=True):
     ''' evolves the motion of the molecules of gas in time
     gas: instance of clas Gas
     N: int = number of simulation steps
-    dt: float = time step of the simulation'''
+    dt: float = time step of the simulation
+    periodic: bool = apply periodic boundary conditions'''
     i=0
     while i!=N:
-        gas=Gas(time_evolution_inside(gas,gas.molecules,dt),gas.volume)
+        gas=Gas(time_evolution_inside(gas,gas.molecules,dt),gas.dimensions)
         i+=1
+    if periodic==True:
+        gas.periodic()
     return(gas)
 
 
@@ -64,11 +68,19 @@ class Gas:
     pressure : float = pressure of simulated gas [Pa]
     temperature : float = temperature of simulated gas [K]
     '''
-    def __init__(self, molecules, volume, pressure = 10**5, temperature = 273.15):
+
+    
+    def __init__(self, molecules, dimensions, pressure = 10**5, temperature = 273.15):
         self.molecules = molecules
-        self.volume = volume # [m^3]
+        self.dimensions = dimensions # [m^3]
         self.pressure = pressure # [Pa]
         self.temperature = temperature #[K]
+        if type(dimensions)==float or type(dimensions)==int:
+            self.volume=dimensions
+        else:
+            self.volume=dimensions[0]*dimensions[1]
+        
+
         
     def dimension_2D(self):
         try:
@@ -153,3 +165,30 @@ class Gas:
         for i in self.molecules:
             forces.append(self.lj_force(i.position))
         return(forces)
+    
+    def periodic(self):
+        if type(self.dimensions)==float or type(self.dimensions)==int:
+            positions=self.positions()
+            for i in range(len(self.molecules)):
+                pos=((self.molecules[i]).position)
+                if pos>=self.dimensions:
+                    difference=abs(pos-self.dimensions)
+                    ((self.molecules[i]).position)=difference
+        else:
+            positions=self.positions()
+            for i in range(len(self.molecules)):
+                pos_x=((self.molecules[i]).position)[0]
+                pos_y=((self.molecules[i]).position)[1]
+                difference_x=False
+                if pos_x>=self.dimensions[0]:
+                    difference_x=abs(pos_x-self.dimensions[0])
+                    ((self.molecules[i]).position)=(difference_x,pos_y)
+
+                if pos_y>=self.dimensions[1]:
+                    difference_y=abs(pos_y-self.dimensions[1])
+                    if difference_x:
+                        ((self.molecules[i]).position)=(difference_x, difference_y)
+                    else:
+                        ((self.molecules[i]).position)=(pos_x, difference_y)
+
+

@@ -91,13 +91,16 @@ print('see help(function) for detailed describtion of all parameters, how to cha
 # print(help(g.lj_force))
 
 ####################################################################################################################
-#time evolution simulation
+print()
+print('simulation with or without periodic boundary conditions (state True or False)')
+print()
+#time evolution simulation with or without periodic BCs
 #specify separate molecules in the simulation:
-# atoms = np.array((Molecule((1,1),(2,3)),Molecule((2,2),(4,1)),Molecule((3,3),(5,6)),Molecule((5,5),(6,8))))
-
-# atoms = np.array((Molecule(1,2),Molecule(2,4),Molecule(3,5),Molecule(5,6)))
+atoms = np.array((Molecule((1,1),(2,3)),Molecule((2,2),(4,1)),Molecule((3,3),(5,6)),Molecule((5,5),(6,8))))
+# atoms = np.array((Molecule(1,1),Molecule(1.2,1),Molecule(0.6,0.5)))
+# atoms = np.array((Molecule((1,1),(0,1)),Molecule((1,2),(1,0))))
 #combine them into a gas
-g=Gas(atoms,1)
+g=Gas(atoms,(5,5))
 print('before time evolution')
 print()
 print('positions of particles')
@@ -108,7 +111,8 @@ print('forces on particles')
 print(g.lj_forces())
 print()
 
-g=time_evolution(g,2,1)
+g=time_evolution(g,2,0.05)
+
 print('after')
 print()
 print('positions of particles')
