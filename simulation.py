@@ -34,6 +34,10 @@ print()
 
 print('forces on all molecules due to other molecules')
 print(g.lj_forces())
+print()
+
+print('distances between moleucles')
+print(g.atomic_distances())
 
 print()
 print('see help(function) for detailed describtion of all parameters, how to change temperature, pressure etc of the simulation')
@@ -77,6 +81,10 @@ print(g.lj_force(2))
 
 print('force on all molecules:')
 print(g.lj_forces())
+print()
+
+print('distances between moleucles')
+print(g.atomic_distances())
 
 print()
 print('see help(function) for detailed describtion of all parameters, how to change temperature, pressure etc of the simulation')

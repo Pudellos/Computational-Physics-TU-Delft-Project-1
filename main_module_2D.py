@@ -21,7 +21,16 @@ class Gas:
         self.volume = volume # [m^3]
         self.pressure = pressure # [Pa]
         self.temperature = temperature #[K]
-    
+        
+    def dimension_2D(self):
+        try:
+            if len(self.positions()[0])==2:
+                dim2=True
+        except:
+                dim2=False
+        return(dim2)
+     
+
     def positions(self):
         '''Returns positions of all gas molecules'''
         positions= [m.position for m in self.molecules]
@@ -55,13 +64,14 @@ class Gas:
         distances=[]
         distances_x=[]
         distances_y=[]
+
         for i in range(len(self.couples_of_molecules())):
-            try:
-                distances.append(abs(self.couples_of_molecules()[i][0]-self.couples_of_molecules()[i][1]))
-            except TypeError:
+            if self.dimension_2D():
                 distances_x.append(abs(self.couples_of_molecules()[i][0][0]-self.couples_of_molecules()[i][1][0]))
                 distances_y.append(abs(self.couples_of_molecules()[i][0][1]-self.couples_of_molecules()[i][1][1]))
                 distances.append((abs((distances_x[i])**2+(distances_y[i])**2))**(1/2))
+            else:
+                distances.append(abs(self.couples_of_molecules()[i][0]-self.couples_of_molecules()[i][1]))
         return(distances)
 
     
@@ -78,12 +88,11 @@ class Gas:
         for i in self.couples_of_molecules():
                 temp_potentials=self.lj_potentials(differenciate_gas=True, symbol_mode_gas=False, P_gas=self.pressure, V_gas=self.volume, T_gas=self.temperature)
         for i in self.couples_of_molecules():
-            try:
-                if len(chosen)==2:
+            if self.dimension_2D():
                     for j in i:
                         if j[0]==chosen[0] and j[1]==chosen[1]:
                             force+=-1*temp_potentials[index]*self.atomic_distances()[index]          
-            except:
+            else:
                 for j in i:
                     if j==chosen:
                         force+=-1*temp_potentials[index]*self.atomic_distances()[index]
@@ -96,4 +105,3 @@ class Gas:
         for i in self.molecules:
             forces.append(self.lj_force(i.position))
         return(forces)
-            

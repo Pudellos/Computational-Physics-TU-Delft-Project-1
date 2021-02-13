@@ -40,7 +40,7 @@ def LJ_potential(r, N, P=10*5, V=1, T=273.15, symbol_mode=False, differenciate=F
     eps = sym.Symbol('eps')
     r_abs=sym.Symbol('r_abs')
     
-    sigma_value=3.405
+    sigma_value=3.405e-10
     eps_value=119.8/k_B(P,V,T,N) 
     try:
         if len(r)==2:
