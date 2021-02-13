@@ -27,7 +27,7 @@ def time_evolution_inside(gas,atoms,dt):
             temp.append(Molecule(v,pos))
     else:
         forces=gas.lj_forces()
-        m=1
+        m=6.6335209e-26 #[kg]
         for i in range(len(forces)):
             ((atoms[i]).velocity)=((atoms[i]).velocity)+((1/m)*(forces[i])*dt)
             ((atoms[i]).position)=((atoms[i]).position)+(dt*(atoms[i]).velocity)

@@ -108,7 +108,7 @@ print('forces on particles')
 print(g.lj_forces())
 print()
 
-g=time_evolution(g,2,10**54)
+g=time_evolution(g,2,1)
 print('after')
 print()
 print('positions of particles')
