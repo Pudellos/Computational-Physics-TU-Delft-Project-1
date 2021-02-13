@@ -3,122 +3,91 @@ import numpy as np
 from main_module_2D import Gas
 from main_module_2D import Molecule
 from main_module_2D import time_evolution
-#2D EXAPMLE
-print('example 2D')
 
-#specify separate molecules in the simulation:
-atoms = np.array((Molecule((1,1),2),Molecule((2,2),4),Molecule((3,3),5),Molecule((5,5),6)))
-#combine them into a gas
-g=Gas(atoms,1)
+print('note that you can state the temperature and the pressure of the simulation. \
+You can change dimensions of the box container of the simulation. You can choose to apply preiodic\
+boundary conditions (automatically applied, change settings to turn it off)). You can choose any inital \
+position and velocity of any number of particles (1D or 2D). You can adjust number of steps of the simulation and the timestep')
 
-#examples of class methods for various quantities:
-print('positions of the gas molecules are:')
+############################################################ 2D all functions called ###############################################
+atoms = np.array((Molecule((1,1),(0,1)),Molecule((1,2),(1,0)),Molecule((2,1),(1,1))))
+g=Gas(atoms,(2,2))
+print('examples of calling all funcitons of Gas class, 2D')
+print('positions of particles')
 print(g.positions())
-print()
-
-print('velocities of the gas molecules are:')
+print('velocities of particles')
 print(g.velocities())
-print()
-
-print('list (listed by position) of interacting pairs of molecules in the gas:')
+print('molecules arranged into couples based on their position')
 print(g.couples_of_molecules())
-print()
-
-print('Lennard Johnes potentials between those pairs:')
-print(g.lj_potentials())
-print()
-
-print('derivative of Lennard Johnes potentials between those pairs:')
-print(g.lj_potentials(True))
-print()
-
-print('forces on all molecules due to other molecules')
-print(g.lj_forces())
-print()
-
-print('distances between moleucles')
+print('atomic distances between couples of molecules')
 print(g.atomic_distances())
-
+print('Lennard Jones potentials between couples of molecules')
+print(g.lj_potentials())
+print('forces experianced by each molecule due to lennard johnes potentials')
+print(g.lj_forces())
+print('calculation of potential energy of the simulated gas')
+print(g.Ep())
+print('calculation of kinetic energy of the simulated gas')
+print(g.Ek())
+print('calculation of total energy of the simulated gas')
+print(g.E())
 print()
-print('see help(function) for detailed describtion of all parameters, how to change temperature, pressure etc of the simulation')
-# print(help(g.lj_force))
-
-#1D EXAPMLE
-print()
-print('example 1D')
-
-#specify separate molecules in the simulation:
-atoms = np.array((Molecule(1,2),Molecule(2,4),Molecule(3,5),Molecule(5,6)))
-#combine them into a gas
-g=Gas(atoms,1)
-
-#examples of class methods for various quantities:
-print('positions of the gas molecules are:')
+############################################################ 1D all functions called ###############################################
+atoms = np.array((Molecule(1,1),Molecule(0.5,0),Molecule(0.2,0.2)))
+g=Gas(atoms,1.5)
+print('examples of calling all funcitons of Gas class, 1D')
+print('positions of particles')
 print(g.positions())
-print()
-
-print('velocities of the gas molecules are:')
+print('velocities of particles')
 print(g.velocities())
-print()
-
-print('list (listed by position) of interacting pairs of molecules in the gas:')
+print('molecules arranged into couples based on their position')
 print(g.couples_of_molecules())
-print()
-
-print('Lennard Johnes potentials between those pairs:')
-print(g.lj_potentials())
-print()
-
-print('derivative of Lennard Johnes potentials between those pairs:')
-print(g.lj_potentials(True))
-print()
-
-print('force on a chosen molecule in the gas due to lennard johnes potentials:')
-print('example: force on molecule with position = 1 due to all other molecules:')
-print(g.lj_force(1))
-print('example: force on molecule with position = 2 due to all other molecules:')
-print(g.lj_force(2))
-
-print('force on all molecules:')
-print(g.lj_forces())
-print()
-
-print('distances between moleucles')
+print('atomic distances between couples of molecules')
 print(g.atomic_distances())
-
+print('Lennard Jones potentials between couples of molecules')
+print(g.lj_potentials())
+print('forces experianced by each molecule due to lennard johnes potentials')
+print(g.lj_forces())
+print('calculation of potential energy of the simulated gas')
+print(g.Ep())
+print('calculation of kinetic energy of the simulated gas')
+print(g.Ek())
+print('calculation of total energy of the simulated gas')
+print(g.E())
+############################################################ time evolution of the simulation ###############################################
 print()
-print('see help(function) for detailed describtion of all parameters, how to change temperature, pressure etc of the simulation')
-# print(help(g.lj_force))
-
-####################################################################################################################
-print()
-print('simulation with or without periodic boundary conditions (state True or False)')
-print()
-#time evolution simulation with or without periodic BCs
-#specify separate molecules in the simulation:
-atoms = np.array((Molecule((1,1),(2,3)),Molecule((2,2),(4,1)),Molecule((3,3),(5,6)),Molecule((5,5),(6,8))))
-# atoms = np.array((Molecule(1,1),Molecule(1.2,1),Molecule(0.6,0.5)))
-# atoms = np.array((Molecule((1,1),(0,1)),Molecule((1,2),(1,0))))
-#combine them into a gas
-g=Gas(atoms,(5,5))
+print("now let's evolve the system in time")
+atoms = np.array((Molecule((1,1),(0,1)),Molecule((1,2),(1,0)),Molecule((1.5,1.2),(1,1))))
+g=Gas(atoms,(2,2))
 print('before time evolution')
 print()
 print('positions of particles')
 print(g.positions())
 print('velocities of particles')
 print(g.velocities())
-print('forces on particles')
-print(g.lj_forces())
+print('total energy')
+print(g.E())
 print()
+E_before=g.E()
 
-g=time_evolution(g,2,0.05)
+print('evolution happens')
+g=time_evolution(g,50,0.05)
 
-print('after')
+print()
+print('after time evolution')
 print()
 print('positions of particles')
 print(g.positions())
 print('velocities of particles')
 print(g.velocities())
-print('forces on particles')
-print(g.lj_forces())
-print(g.atomic_distances())
+print('total energy')
+print(g.E())
+E_after=g.E()
+
+print()
+print('is energy conserved?')
+print('checking...')
+if E_before==E_after:
+    print('yes, energy is conserved!')
+else:
+    print('no, energy is not conserved')

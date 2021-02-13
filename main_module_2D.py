@@ -195,3 +195,22 @@ class Gas:
                         ((self.molecules[i]).position)=(difference_x, difference_y)
                     else:
                         ((self.molecules[i]).position)=(pos_x, difference_y)
+
+
+    def Ek(self):
+        '''returns kinetic energy of the gas in Joules'''
+        M=39.948/1000 #[kg/mol]
+        T=self.temperature
+        R=8.314 #J/(mol*K)
+        m=6.6335209e-26 #[kg]
+        v_rms=np.sqrt(3*R*T/M)
+        return((1/2)*m*v_rms**2)
+    
+    def Ep(self):
+        sum=0
+        for i in self.lj_potentials():
+            sum+=i
+        return(sum)
+    
+    def E(self):
+        return(self.Ek()+self.Ep())
