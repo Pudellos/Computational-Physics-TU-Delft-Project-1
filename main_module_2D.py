@@ -2,6 +2,54 @@ import numpy as np
 import Lennard_Jones_potential_2D as LJ
 import itertools as it
 
+
+def time_evolution_inside(gas,atoms,dt):
+    '''evolves individual molecules of the gas
+    gas: instance of class Gas
+    atoms: numpy array of instances of class Molecule
+    dt: float - timestep of the simulation'''
+    
+    if gas.dimension_2D():
+        forces=gas.lj_forces()
+        m=1
+        temp=[]
+        for i in range(len(forces)):
+            v_x=((atoms[i]).velocity)[0]
+            v_y=((atoms[i]).velocity)[1]
+            v_x=(v_x)+((1/m)*(forces[i])*dt)
+            v_y=(v_y)+((1/m)*(forces[i])*dt)
+            v=(v_x,v_y)
+            pos_x=((atoms[i]).position)[0]+(v_x*dt)
+            pos_y=((atoms[i]).position)[1]+(v_y*dt)
+            pos_x=pos_x+(dt*(v_x))
+            pos_y=pos_y+(dt*(v_y))
+            pos=(pos_x,pos_y)
+            temp.append(Molecule(v,pos))
+    else:
+        forces=gas.lj_forces()
+        m=1
+        for i in range(len(forces)):
+            ((atoms[i]).velocity)=((atoms[i]).velocity)+((1/m)*(forces[i])*dt)
+            ((atoms[i]).position)=((atoms[i]).position)+(dt*(atoms[i]).velocity)
+
+        temp=[]
+        for i in atoms: 
+            temp.append(Molecule(i.position,i.velocity))
+    return(temp)
+
+def time_evolution(gas,N,dt):
+    ''' evolves the motion of the molecules of gas in time
+    gas: instance of clas Gas
+    N: int = number of simulation steps
+    dt: float = time step of the simulation'''
+    i=0
+    while i!=N:
+        gas=Gas(time_evolution_inside(gas,gas.molecules,dt),gas.volume)
+        i+=1
+    return(gas)
+
+
+
 class Molecule:
     '''Class Molecule, describes a single atom or molecule with its position in space and velocity'''
     def __init__(self, position, velocity):

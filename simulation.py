@@ -2,7 +2,7 @@ import main_module_2D
 import numpy as np
 from main_module_2D import Gas
 from main_module_2D import Molecule
-
+from main_module_2D import time_evolution
 #2D EXAPMLE
 print('example 2D')
 
@@ -89,3 +89,32 @@ print(g.atomic_distances())
 print()
 print('see help(function) for detailed describtion of all parameters, how to change temperature, pressure etc of the simulation')
 # print(help(g.lj_force))
+
+####################################################################################################################
+#time evolution simulation
+#specify separate molecules in the simulation:
+# atoms = np.array((Molecule((1,1),(2,3)),Molecule((2,2),(4,1)),Molecule((3,3),(5,6)),Molecule((5,5),(6,8))))
+
+# atoms = np.array((Molecule(1,2),Molecule(2,4),Molecule(3,5),Molecule(5,6)))
+#combine them into a gas
+g=Gas(atoms,1)
+print('before time evolution')
+print()
+print('positions of particles')
+print(g.positions())
+print('velocities of particles')
+print(g.velocities())
+print('forces on particles')
+print(g.lj_forces())
+print()
+
+g=time_evolution(g,2,10**54)
+print('after')
+print()
+print('positions of particles')
+print(g.positions())
+print('velocities of particles')
+print(g.velocities())
+print('forces on particles')
+print(g.lj_forces())
+print(g.atomic_distances())
