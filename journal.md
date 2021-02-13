@@ -36,6 +36,7 @@ Branch 'testing' created because no permission to edit master branch.
 2) time evolution of the system added
 3) periodic boundary conditions added
 4) calculation of total energy, potential energy and kinetic energy and check of conservation of energy added
+5) function added to generate simulation with stated: number of molecules, temperature, pressure, box dimensions, dimension of the simulation (1D or 2D) (the velocities and positions are distributed according to Gaussian distribution) - this can be used to initialize the simulation
 
 outcomes:
 the code supports 2D and 1D
@@ -45,8 +46,6 @@ you can evolve the system in time with chosen number of steps and chosen size of
 you can check if the total energy is conserved
 the code supports any number of gas molecules with any initial energy and position, not recomended to use more than 4 molecules because then it's slow
 
-remarks:
-we need to add an option to state energy of the system and do gaussian distribution of the positions and velocities of the praticles
 
 (due 14 February 2021, 23:59)
 
