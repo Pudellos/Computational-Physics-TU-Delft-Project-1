@@ -3,6 +3,28 @@ import Lennard_Jones_potential_2D as LJ
 import itertools as it
 
 
+def init(dim,N,dimensions,P=10**5,T=273.15):
+    '''generates gas with Gaussian distribution of positions and velocities
+    dim: int (=1 or =2) = dimension of the simulation eg 1D or 2D
+    N = int = number of molecules to be generated
+    dimensions : float (1D) or touple (2D) = dimensions of the box
+    P : float = pressure in Pa
+    T : float = temperature in K
+    '''
+    atoms=np.full(N,Molecule(0,0))
+    g=Gas(atoms,dimensions,P,T)
+    init_v_x=g.initialize_velocity(400)
+    init_v_y=g.initialize_velocity(400)
+    init_pos_x=g.initialize_position()
+    init_pos_y=g.initialize_position()
+    for i in range(N):
+        if dim==2:
+            g.molecules[i].velocity=(init_v_x[0][i],init_v_y[0][i])
+            g.molecules[i].position=(init_pos_x[0][i],init_pos_y[0][i])
+        if dim==1:
+            g.molecules[i].velocity=init_v_x[0][i]
+            g.molecules[i].position=init_pos_x[0][i]
+    return(g)
 
 def time_evolution_inside(gas,atoms,dt):
     '''evolves individual molecules of the gas
@@ -197,7 +219,7 @@ class Gas:
                         ((self.molecules[i]).position)=(pos_x, difference_y)
 
 
-    def Ek(self):
+    def Ek(self,T=True):
         '''returns kinetic energy of the gas in Joules'''
         M=39.948/1000 #[kg/mol]
         T=self.temperature
@@ -214,3 +236,14 @@ class Gas:
     
     def E(self):
         return(self.Ek()+self.Ep())
+    
+    def initialize_velocity(self,T):
+        E=self.Ek(T)
+        M=39.948/1000 #[kg/mol]
+        R=8.314 #J/(mol*K)
+        m=6.6335209e-26 #[kg]
+        v_rms=np.sqrt(3*R*T/M)
+        return(np.random.normal(v_rms, 10, size=(1, len(self.molecules))))
+    
+    def initialize_position(self):
+        return(np.random.normal(0, self.volume*0.01, size=(1, len(self.molecules)))) 

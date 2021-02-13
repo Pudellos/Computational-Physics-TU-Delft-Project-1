@@ -3,6 +3,7 @@ import numpy as np
 from main_module_2D import Gas
 from main_module_2D import Molecule
 from main_module_2D import time_evolution
+from main_module_2D import init
 
 print('note that you can state the temperature and the pressure of the simulation. \
 You can change dimensions of the box container of the simulation. You can choose to apply preiodic\
@@ -91,3 +92,6 @@ if E_before==E_after:
     print('yes, energy is conserved!')
 else:
     print('no, energy is not conserved')
+    
+############################################################ generate gaussian distribution of positions and velocities ###############################################
+g=init(2,3,(2,2))
