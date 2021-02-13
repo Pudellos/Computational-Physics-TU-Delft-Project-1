@@ -37,6 +37,17 @@ Branch 'testing' created because no permission to edit master branch.
 3) periodic boundary conditions added
 4) calculation of total energy, potential energy and kinetic energy and check of conservation of energy added
 
+outcomes:
+the code supports 2D and 1D
+you can adjust temperature, pressure and dimensions of the gas box
+you can turn periodic boundary conditions on and off (wouldn't recomend turning off because then the meaning of the simulation is unknown)
+you can evolve the system in time with chosen number of steps and chosen size of the timestep
+you can check if the total energy is conserved
+the code supports any number of gas molecules with any initial energy and position, not recomended to use more than 4 molecules because then it's slow
+
+remarks:
+we need to add an option to state energy of the system and do gaussian distribution of the positions and velocities of the praticles
+
 (due 14 February 2021, 23:59)
 
 
