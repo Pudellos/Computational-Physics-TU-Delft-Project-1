@@ -48,8 +48,8 @@ def time_evolution(gas,N,dt,periodic=True):
     while i!=N:
         gas=Gas(time_evolution_inside(gas,gas.molecules,dt),gas.dimensions)
         i+=1
-    if periodic==True:
-        gas.periodic()
+        if periodic==True:
+            gas.periodic()
     return(gas)
 
 
