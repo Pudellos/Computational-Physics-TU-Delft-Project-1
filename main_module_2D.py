@@ -116,7 +116,12 @@ class Gas:
         
         potentials=[]
         for i in self.couples_of_molecules():
-            potentials.append(LJ.LJ_potential(i,len(self.molecules),P=self.pressure, V=self.volume, T=self.temperature, symbol_mode=symbol_mode_gas, differenciate=differenciate_gas))
+            if self.dimension_2D():
+                for j in i:
+                    potentials.append(LJ.LJ_potential(j,len(self.molecules),P=self.pressure, V=self.volume, T=self.temperature, symbol_mode=symbol_mode_gas, differenciate=differenciate_gas))
+                
+            else:
+                potentials.append(LJ.LJ_potential(i,len(self.molecules),P=self.pressure, V=self.volume, T=self.temperature, symbol_mode=symbol_mode_gas, differenciate=differenciate_gas))
         return(potentials)
     
     def atomic_distances(self):
@@ -190,5 +195,3 @@ class Gas:
                         ((self.molecules[i]).position)=(difference_x, difference_y)
                     else:
                         ((self.molecules[i]).position)=(pos_x, difference_y)
-
-
