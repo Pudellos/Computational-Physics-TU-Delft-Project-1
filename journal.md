@@ -52,6 +52,9 @@ the code supports any number of gas molecules with any initial energy and positi
 
 ## Week 2
 (due 21 February 2021, 23:59)
+1) correction of the periodic boundary conditions, now it keeps going until the molecules are confined within the box, beofre it only did correction once but molecule could still be left outside of the box.
+2) correction of function that generates randomly distributed velocities of molecules at given temperature
+3) energy of the system isnt's conserved because the velocities only keep increasing. don't know how to correct for that yet.
 
 
 ## Week 3
