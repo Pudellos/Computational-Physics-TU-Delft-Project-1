@@ -35,7 +35,7 @@ def time_evolution_inside(gas,atoms,dt):
     
     if gas.dimension_2D():
         forces=gas.lj_forces()
-        m=1
+        m=6.6335209e-26 #[kg]
         temp=[]
         for i in range(len(forces)):
             v_x=((atoms[i]).velocity)[0]
@@ -195,6 +195,7 @@ class Gas:
         return(forces)
     
     def periodic(self):
+        ''' note that for 1 D it doesn't fully work yet'''
         if type(self.dimensions)==float or type(self.dimensions)==int:
             positions=self.positions()
             for i in range(len(self.molecules)):
@@ -210,12 +211,37 @@ class Gas:
                 pos_x=((self.molecules[i]).position)[0]
                 pos_y=((self.molecules[i]).position)[1]
                 difference_x=False
-                while pos_x>=self.dimensions[0] or pos_y>=self.dimensions[1]:
-                    difference_x=abs(pos_x-self.dimensions[0])
-                    difference_y=abs(pos_y-self.dimensions[1])
-                    ((self.molecules[i]).position)=(difference_x,difference_y)
-                    pos_x=((self.molecules[i]).position)[0]
-                    pos_y=((self.molecules[i]).position)[1]
+                while abs(pos_x)>=self.dimensions[0] or abs(pos_y)>=self.dimensions[1]:
+                    if pos_x>=0 and pos_y>=0:
+                        difference_x=abs(pos_x-self.dimensions[0])
+                        difference_y=abs(pos_y-self.dimensions[1])
+                        ((self.molecules[i]).position)=(difference_x,difference_y)
+                        pos_x=((self.molecules[i]).position)[0]
+                        pos_y=((self.molecules[i]).position)[1] 
+                    elif pos_x<=0 and pos_y<=0:
+                        difference_x=pos_x+self.dimensions[0]
+                        difference_y=pos_y+self.dimensions[1]
+                        ((self.molecules[i]).position)=(difference_x,difference_y)
+                        pos_x=((self.molecules[i]).position)[0]
+                        pos_y=((self.molecules[i]).position)[1] 
+                    elif pos_x>=0 and pos_y<=0:
+                        difference_x=abs(pos_x-self.dimensions[0])
+                        difference_y=pos_y+self.dimensions[1]
+                        ((self.molecules[i]).position)=(difference_x,difference_y)
+                        pos_x=((self.molecules[i]).position)[0]
+                        pos_y=((self.molecules[i]).position)[1] 
+                    elif pos_x<=0 and pos_y>=0:
+                        difference_x=pos_x+self.dimensions[0]
+                        difference_y=abs(pos_y-self.dimensions[1])
+                        ((self.molecules[i]).position)=(difference_x,difference_y)
+                        pos_x=((self.molecules[i]).position)[0]
+                        pos_y=((self.molecules[i]).position)[1] 
+                if pos_x<=0:
+                    difference_x=pos_x+self.dimensions[0]
+                    ((self.molecules[i]).position)=(difference_x,pos_y)
+                if pos_y<=0:
+                    difference_y=pos_y+self.dimensions[1]
+                    ((self.molecules[i]).position)=(pos_x,difference_y)
 
 
     def Ek(self,T=True):
