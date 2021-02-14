@@ -13,18 +13,19 @@ def init(dim,N,dimensions,P=10**5,T=273.15):
     '''
     atoms=np.full(N,Molecule(0,0))
     g=Gas(atoms,dimensions,P,T)
-    init_v_x=g.initialize_velocity(400)
-    init_v_y=g.initialize_velocity(400)
+    init_v_x=g.initialize_velocity(T)
+    init_v_y=g.initialize_velocity(T)
     init_pos_x=g.initialize_position()
     init_pos_y=g.initialize_position()
-    for i in range(N):
-        if dim==2:
-            g.molecules[i].velocity=(init_v_x[0][i],init_v_y[0][i])
-            g.molecules[i].position=(init_pos_x[0][i],init_pos_y[0][i])
-        if dim==1:
-            g.molecules[i].velocity=init_v_x[0][i]
-            g.molecules[i].position=init_pos_x[0][i]
-    return(g)
+    index=0
+    for i in atoms:
+        i.velocity=(init_v_x[0][index],init_v_y[0][index])
+        i.position=(init_pos_x[0][index],init_pos_y[0][index])
+        molecule=Molecule(i.position,i.velocity)
+        atoms[index]=molecule
+        index+=1
+    a=Gas(atoms,dimensions,P,T)
+    return(a)
 
 def time_evolution_inside(gas,atoms,dt):
     '''evolves individual molecules of the gas
@@ -198,25 +199,23 @@ class Gas:
             positions=self.positions()
             for i in range(len(self.molecules)):
                 pos=((self.molecules[i]).position)
-                if pos>=self.dimensions:
+                while pos>=self.dimensions:
                     difference=abs(pos-self.dimensions)
                     ((self.molecules[i]).position)=difference
+                    pos=((self.molecules[i]).position)
+
         else:
             positions=self.positions()
             for i in range(len(self.molecules)):
                 pos_x=((self.molecules[i]).position)[0]
                 pos_y=((self.molecules[i]).position)[1]
                 difference_x=False
-                if pos_x>=self.dimensions[0]:
+                while pos_x>=self.dimensions[0] or pos_y>=self.dimensions[1]:
                     difference_x=abs(pos_x-self.dimensions[0])
-                    ((self.molecules[i]).position)=(difference_x,pos_y)
-
-                if pos_y>=self.dimensions[1]:
                     difference_y=abs(pos_y-self.dimensions[1])
-                    if difference_x:
-                        ((self.molecules[i]).position)=(difference_x, difference_y)
-                    else:
-                        ((self.molecules[i]).position)=(pos_x, difference_y)
+                    ((self.molecules[i]).position)=(difference_x,difference_y)
+                    pos_x=((self.molecules[i]).position)[0]
+                    pos_y=((self.molecules[i]).position)[1]
 
 
     def Ek(self,T=True):
@@ -246,4 +245,4 @@ class Gas:
         return(np.random.normal(v_rms, 10, size=(1, len(self.molecules))))
     
     def initialize_position(self):
-        return(np.random.normal(0, self.volume*0.01, size=(1, len(self.molecules)))) 
+        return(abs(np.random.normal(0, 0.0000001, size=(1, len(self.molecules)))))

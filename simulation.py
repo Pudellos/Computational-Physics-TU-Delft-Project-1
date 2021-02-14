@@ -94,4 +94,39 @@ else:
     print('no, energy is not conserved')
     
 ############################################################ generate gaussian distribution of positions and velocities ###############################################
-g=init(2,3,(2,2))
+g=init(2,2,(1000,1000))
+print()
+print("now let's evolve the system in time")
+g=init(2,2,(1000,1000))
+print('before time evolution')
+print()
+print('positions of particles')
+print(g.positions())
+print('velocities of particles')
+print(g.velocities())
+print('total energy')
+print(g.E())
+print()
+E_before=g.E()
+
+print('evolution happens')
+g=time_evolution(g,50,0.05,True)
+
+print()
+print('after time evolution')
+print()
+print('positions of particles')
+print(g.positions())
+print('velocities of particles')
+print(g.velocities())
+print('total energy')
+print(g.E())
+E_after=g.E()
+
+print()
+print('is energy conserved?')
+print('checking...')
+if E_before==E_after:
+    print('yes, energy is conserved!')
+else:
+    print('no, energy is not conserved')
