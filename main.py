@@ -33,6 +33,12 @@ def time_evolution_inside(gas,dt):
     molecules_evolved=np.array([Molecule(v[i],pos[i]) for i in range(len(gas.molecules))])
     return(Gas(molecules_evolved,gas.dimensions,gas.pressure,gas.temperature))
 
+def time_evolution_inside_periodic(gas,dt):
+    v,pos=gas.velocities(),gas.position_periodic()
+    molecules_evolved=np.array([Molecule(v[i],pos[i]) for i in range(len(gas.molecules))])
+    return(Gas(molecules_evolved,gas.dimensions,gas.pressure,gas.temperature))
+
+
 def time_evolution(gas,N,dt,periodic=True):
     ''' evolves the motion of the molecules of gas in time
     gas: instance of clas Gas
@@ -41,7 +47,10 @@ def time_evolution(gas,N,dt,periodic=True):
     periodic: bool = apply periodic boundary conditions'''
     i=0
     while i!=N:
-        gas=time_evolution_inside(gas,dt)
+        if periodic==True:
+            gas=time_evolution_inside_periodic(gas,dt)
+        else:
+            gas=time_evolution_inside(gas,dt)
         i+=1
     return(gas)
 
