@@ -170,7 +170,7 @@ class Gas:
 
     def lj_forces(self):
         forces=np.zeros(len(self.molecules))
-        forces=np.array([i*sum(self.atomic_distances()) for i in self.lj_potentials()])
+        forces=(np.array([i*sum(self.atomic_distances()) for i in self.lj_potentials()]))*-1
         return(forces)
 
     def Ek(self,T=True):
