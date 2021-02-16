@@ -3,28 +3,51 @@ import Lennard_Jones_potential_2D as LJ
 import itertools as it
 import sympy as sym
 
-def init(dim,N,dimensions,P=10**5,T=273.15):
-    atoms=np.full(N,Molecule(0,0))
-    g=Gas(atoms,dimensions,P,T)
-    init_v_x=g.initialize_velocity(T)
-    init_v_y=g.initialize_velocity(T)
-    init_pos_x=g.initialize_position()
-    init_pos_y=g.initialize_position()
-    index=0
-    for i in atoms:
-        i.velocity=(init_v_x[0][index],init_v_y[0][index])
-        i.position=(init_pos_x[0][index],init_pos_y[0][index])
-        molecule=Molecule(i.position,i.velocity)
-        atoms[index]=molecule
-        index+=1
+def init(N,dimensions,P=10**5,T=273.15):
+    '''makes gas with stated number of molecules and in box of stated dimensions
+    N : int = number of gas molecules in the simulation
+    dimensions : tuple = dimensions of the gas container
+    P : float = pressure of the simulated gas
+    T : float = temperature of the simulated gas
+    '''
+    if len(dimensions)==2:
+        atoms=np.full(N,Molecule(0,0))
+        g=Gas(atoms,dimensions,P,T)
+        init_v_x=g.initialize_velocity(T)
+        init_v_y=g.initialize_velocity(T)
+        init_pos_x=g.initialize_position()
+        init_pos_y=g.initialize_position()
+        index=0
+        for i in atoms:
+            i.velocity=(init_v_x[0][index],init_v_y[0][index])
+            i.position=(init_pos_x[0][index],init_pos_y[0][index])
+            molecule=Molecule(i.position,i.velocity)
+            atoms[index]=molecule
+            index+=1
+    if len(dimensions)==3:
+        atoms=np.full(N,Molecule(0,0))
+        g=Gas(atoms,dimensions,P,T)
+        init_v_x=g.initialize_velocity(T)
+        init_v_y=g.initialize_velocity(T)
+        init_v_z=g.initialize_velocity(T)
+        init_pos_x=g.initialize_position()
+        init_pos_y=g.initialize_position()
+        init_pos_z=g.initialize_position()
+        index=0
+        for i in atoms:
+            i.velocity=(init_v_x[0][index],init_v_y[0][index],init_v_z[0][index])
+            i.position=(init_pos_x[0][index],init_pos_y[0][index],init_pos_z[0][index])
+            molecule=Molecule(i.position,i.velocity)
+            atoms[index]=molecule
+            index+=1
     a=Gas(atoms,dimensions,P,T)
     return(a)
 
 def time_evolution_inside(gas,dt,periodic=True):
     '''evolves individual molecules of the gas
-    gas: instance of class Gas
-    atoms: numpy array of instances of class Molecule
-    dt: float - timestep of the simulation'''
+    gas : instance of class Gas
+    dt : float - timestep of the simulation
+    periodic : bool = apply periodic conditions to the simulation or not'''
     v,pos=gas.velocities(),gas.positions()
     forces=np.array(gas.lj_forces())
     m=6.6335209e-26 #[kg]
@@ -41,23 +64,16 @@ def time_evolution_inside(gas,dt,periodic=True):
     return(g)
 
 def time_evolution(gas,N,dt,periodic=True):
+    '''evolves gas simulation in time
+    gas : instance of class Gas
+    N : into = number of simulation steps
+    dt : float = time step of the simulation
+    periodic : bool = apply periodic conditions to the simulation or not'''
     i=0
     while i!=N:
         gas=time_evolution_inside(gas,dt,periodic)
         i+=1
     return(gas)
-
-
-
-def periodic_positions_old(gas):
-            positions=gas.positions()
-            index=np.unique(np.where(abs(positions)>=gas.dimensions)[0])
-            while index.size>0:
-                difference=abs(positions-gas.dimensions)
-                positions[index]=difference[index]
-                index=np.unique(np.where(positions>=gas.dimensions)[0])
-            return(positions)
-
 
 class Molecule:
     '''Class Molecule, describes a single atom or molecule with its position in space and velocity'''
@@ -82,9 +98,11 @@ class Gas:
         self.temperature = temperature #[K]
         if type(dimensions)==float or type(dimensions)==int:
             self.volume=dimensions
-        else:
+        elif len(dimensions)==2:
             self.volume=dimensions[0]*dimensions[1]
-        
+        elif len(dimensions)==3:
+            self.volume=dimensions[0]*dimensions[1]*dimensions[2]
+            
     def k_B(self):
         ''' Calculation of Boltzmann constant for the simulation
     
@@ -96,7 +114,7 @@ class Gas:
         return((self.pressure*self.volume)/(self.temperature*len(self.molecules)))
     
     def lj_potentials_between_pairs(self, differenciate=True):
-
+        ''' computes Lennard Jones potential between a pair of molecules'''
         def equation(sigma,eps,r_abs):
             return((4*eps*((sigma/r_abs)**12-(sigma/r_abs)**6)))
     
@@ -109,6 +127,8 @@ class Gas:
         r=np.zeros(len(self.couples_of_molecules()))
         if self.dimension_2D():
             r=np.array([np.sqrt((abs(i[0][0]-i[1][0]))**2+(abs(i[0][1]-i[1][1]))**2) for i in self.couples_of_molecules()])
+        if self.dimension_3D():
+            r=np.array([np.sqrt((abs(i[0][0]-i[1][0]))**2+(abs(i[0][1]-i[1][1]))**2+(abs(i[0][2]-i[1][2]))**2) for i in self.couples_of_molecules()])   
         potentials=np.zeros(len(self.couples_of_molecules()))
         eqn=equation(sigma,eps,r_abs)
         potentials=np.array([eqn.evalf(subs={sigma: sigma_value, eps: eps_value, r_abs:i}) for i in r])
@@ -119,6 +139,7 @@ class Gas:
         return(potentials)
     
     def lj_potentials(self):
+        '''computes Lennard Jones potentials on couples of molecules as given by function couples_of_molecules '''
         k=self.lj_potentials_between_pairs()
         potentials=np.zeros(len(self.molecules))
         for i in range(len(self.molecules)):
@@ -129,13 +150,20 @@ class Gas:
         return(potentials)
 
     def dimension_2D(self):
-        try:
-            if len(self.positions()[0])==2:
+        '''checks if the simulation is 2D'''
+        if len(self.positions()[0])==2:
                 dim2=True
-        except:
+        else:
                 dim2=False
         return(dim2)
-     
+    
+    def dimension_3D(self):
+        '''checks if the simulation is 3D'''
+        if len(self.positions()[0])==3:
+                dim3=True
+        else:
+                dim3=False
+        return(dim3)
 
     def positions(self):
         '''Returns positions of all gas molecules'''
@@ -143,6 +171,7 @@ class Gas:
         return(positions) 
         
     def position_periodic(self):
+        '''makes positions of molecules obey periodic boundary conditions'''
         return(periodic_positions(self))
         
     def velocities(self):
@@ -161,9 +190,12 @@ class Gas:
         r=np.zeros(len(self.couples_of_molecules()))
         if self.dimension_2D():
             r=np.array([np.sqrt((abs(i[0][0]-i[1][0]))**2+(abs(i[0][1]-i[1][1]))**2) for i in self.couples_of_molecules()])
+        if self.dimension_3D():
+            r=np.array([np.sqrt((abs(i[0][0]-i[1][0]))**2+(abs(i[0][1]-i[1][1]))**2+(abs(i[0][2]-i[1][2]))**2) for i in self.couples_of_molecules()])
         return(r)
 
     def lj_forces(self):
+        '''calculates forces on all molecules due to Lennard Johnes potentials between all pairs of molecules'''
         forces=np.zeros(len(self.molecules))
         forces=(np.array([(-i)*sum(self.atomic_distances()) for i in self.lj_potentials()]))
         return(forces)
@@ -178,15 +210,19 @@ class Gas:
         return((1/2)*m*v_rms**2)
     
     def Ep(self):
+        '''returns potential energy of the gas in Joules'''
         sum=0
         for i in self.lj_potentials():
             sum+=i
         return(sum)
     
     def E(self):
+        '''returns total energy of the gas in Joules'''
         return(self.Ek()+self.Ep())
     
     def initialize_velocity(self,T):
+        '''returns np.array of Gaussian distribution of velocities at temperature T
+        T : float = temperature of simulation'''
         E=self.Ek(T)
         M=39.948/1000 #[kg/mol]
         R=8.314 #J/(mol*K)
@@ -195,6 +231,7 @@ class Gas:
         return(np.random.normal(v_rms, 10, size=(1, len(self.molecules))))
     
     def initial_rms_v(self,T):
+        '''returns v rms of the molecules'''
         E=self.Ek(T)
         M=39.948/1000 #[kg/mol]
         R=8.314 #J/(mol*K)
@@ -203,36 +240,11 @@ class Gas:
         return(v_rms)
     
     def initialize_position(self):
+        '''returns random positions of the gas molecules around the gas inlet (gas inlet's 2D coordinates = (0,0), 3D coordinates = (0,0,0))'''
         return(abs(np.random.normal(0, 0.0000001, size=(1, len(self.molecules)))))
-    
-    
-# def periodic_positions_2(gas):
-#             positions=gas.positions()
-#             index=np.unique(np.where(abs(positions)>=gas.dimensions)[0])
-#             while index.size>0:
-#                 difference=abs(positions-gas.dimensions)
-#                 positions[index]=difference[index]
-#                 index=np.unique(np.where(positions>=gas.dimensions)[0])
-                
-#             print(positions)
-#             pos_x=np.zeros(len(positions))
-#             pos_y=np.zeros(len(positions))
-#             for i in range(len(positions)):
-#                 if positions[i][0]<0:
-#                     pos_x[i]=positions[i][0]+gas.dimensions[0]
-#                     positions[i][0]=positions[i][0]+gas.dimensions[0]
-#                     print('less')
-# #                 print(positions[i][0])
-# #                 print(pos_x[i])
-#                 if positions[i][1]<0:
-#                     pos_y[i]=positions[i][1]+gas.dimensions[1]
-#                     positions[i][1]=positions[i][1]+gas.dimensions[1]
-#                     print('less')
-# #                 print(positions[i][0])
-# #                 print(pos_x[i])
-#             print(positions)
-    
+
 def periodic_positions(gas):
+            '''makes the positions of the molecules in Gas class obey periodic boundary conditions - makes sure they are confined within the box, excaping molecule enters from another side'''
             positions=gas.positions()
             index=np.unique(np.where(abs(positions)>=gas.dimensions)[0])
             while index.size>0:
