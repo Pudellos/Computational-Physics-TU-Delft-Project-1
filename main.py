@@ -20,7 +20,7 @@ def init(dim,N,dimensions,P=10**5,T=273.15):
     a=Gas(atoms,dimensions,P,T)
     return(a)
 
-def time_evolution_inside(gas,dt):
+def time_evolution_inside(gas,dt,periodic=True):
     '''evolves individual molecules of the gas
     gas: instance of class Gas
     atoms: numpy array of instances of class Molecule
@@ -28,33 +28,28 @@ def time_evolution_inside(gas,dt):
     v,pos=gas.velocities(),gas.positions()
     forces=np.array(gas.lj_forces())
     m=6.6335209e-26 #[kg]
-    v=np.array([v[i]+(1/m)*forces[i]*dt for i in range(len(gas.molecules))])
-    pos=np.array([pos[i]+v[i]*dt for i in range(len(gas.molecules))])
-    molecules_evolved=np.array([Molecule(v[i],pos[i]) for i in range(len(gas.molecules))])
-    return(Gas(molecules_evolved,gas.dimensions,gas.pressure,gas.temperature))
-
-def time_evolution_inside_periodic(gas,dt):
-    v,pos=gas.velocities(),gas.position_periodic()
-    molecules_evolved=np.array([Molecule(v[i],pos[i]) for i in range(len(gas.molecules))])
-    return(Gas(molecules_evolved,gas.dimensions,gas.pressure,gas.temperature))
-
+    v_after=np.array([(v[i]+(1/m)*forces[i]*dt) for i in range(len(gas.molecules))])
+    pos_after=np.array([(pos[i]+v[i]*dt) for i in range(len(gas.molecules))])
+    molecules=np.full(len(gas.molecules),Molecule(0,0))
+    molecules=np.array([Molecule(pos_after[i],v_after[i]) for i in range(len(gas.molecules))])
+    g=Gas(molecules,gas.dimensions,gas.pressure,gas.temperature)
+    if periodic==True:
+        positions_periodic=g.position_periodic()
+        molecules_periodic=np.full(len(gas.molecules),Molecule(0,0))
+        molecules_periodic=np.array([Molecule(positions_periodic[i],v_after[i]) for i in range(len(gas.molecules))])
+        g=Gas(molecules_periodic,gas.dimensions,gas.pressure,gas.temperature)
+    return(g)
 
 def time_evolution(gas,N,dt,periodic=True):
-    ''' evolves the motion of the molecules of gas in time
-    gas: instance of clas Gas
-    N: int = number of simulation steps
-    dt: float = time step of the simulation
-    periodic: bool = apply periodic boundary conditions'''
     i=0
     while i!=N:
-        if periodic==True:
-            gas=time_evolution_inside_periodic(gas,dt)
-        else:
-            gas=time_evolution_inside(gas,dt)
+        gas=time_evolution_inside(gas,dt,periodic)
         i+=1
     return(gas)
 
-def periodic_positions(gas):
+
+
+def periodic_positions_old(gas):
             positions=gas.positions()
             index=np.unique(np.where(abs(positions)>=gas.dimensions)[0])
             while index.size>0:
@@ -170,7 +165,7 @@ class Gas:
 
     def lj_forces(self):
         forces=np.zeros(len(self.molecules))
-        forces=(np.array([i*sum(self.atomic_distances()) for i in self.lj_potentials()]))*-1
+        forces=(np.array([(-i)*sum(self.atomic_distances()) for i in self.lj_potentials()]))
         return(forces)
 
     def Ek(self,T=True):
@@ -209,3 +204,50 @@ class Gas:
     
     def initialize_position(self):
         return(abs(np.random.normal(0, 0.0000001, size=(1, len(self.molecules)))))
+    
+    
+# def periodic_positions_2(gas):
+#             positions=gas.positions()
+#             index=np.unique(np.where(abs(positions)>=gas.dimensions)[0])
+#             while index.size>0:
+#                 difference=abs(positions-gas.dimensions)
+#                 positions[index]=difference[index]
+#                 index=np.unique(np.where(positions>=gas.dimensions)[0])
+                
+#             print(positions)
+#             pos_x=np.zeros(len(positions))
+#             pos_y=np.zeros(len(positions))
+#             for i in range(len(positions)):
+#                 if positions[i][0]<0:
+#                     pos_x[i]=positions[i][0]+gas.dimensions[0]
+#                     positions[i][0]=positions[i][0]+gas.dimensions[0]
+#                     print('less')
+# #                 print(positions[i][0])
+# #                 print(pos_x[i])
+#                 if positions[i][1]<0:
+#                     pos_y[i]=positions[i][1]+gas.dimensions[1]
+#                     positions[i][1]=positions[i][1]+gas.dimensions[1]
+#                     print('less')
+# #                 print(positions[i][0])
+# #                 print(pos_x[i])
+#             print(positions)
+    
+def periodic_positions(gas):
+            positions=gas.positions()
+            index=np.unique(np.where(abs(positions)>=gas.dimensions)[0])
+            while index.size>0:
+                difference=abs(positions-gas.dimensions)
+                positions[index]=difference[index]
+                index=np.unique(np.where(positions>=gas.dimensions)[0])
+
+            for i in range(len(positions)):
+                if positions[i][0]<0:
+                    positions[i][0]=positions[i][0]+gas.dimensions[0]
+                if positions[i][1]<0:
+                    positions[i][1]=positions[i][1]+gas.dimensions[1]
+    
+            indices=np.array([(i,j) for i in range(positions.shape[0]) for j in range(positions.shape[1])])
+            pos=np.array([positions[i[0]][i[1]] for i in indices])
+            pos[np.where(pos<=0)]=pos[np.where(pos<=0)]+gas.dimensions[0]
+            positions=np.reshape(pos,positions.shape)
+            return(positions)
