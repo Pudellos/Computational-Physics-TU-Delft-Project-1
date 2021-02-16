@@ -15,7 +15,8 @@ g=time_evolution(g,4,0.005)
 print('positions after')
 print(g.positions())
 
-
+print()
+print('calling all functions')
 print('velocities of particles')
 print(g.velocities())
 print('molecules arranged into couples based on their position')
