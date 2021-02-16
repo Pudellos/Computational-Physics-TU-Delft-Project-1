@@ -1,5 +1,4 @@
 import numpy as np
-import Lennard_Jones_potential_2D as LJ
 import itertools as it
 import sympy as sym
 
