@@ -9,7 +9,7 @@ def init(N,dimensions,P=10**5,T=273.15):
     P : float = pressure of the simulated gas
     T : float = temperature of the simulated gas
     '''
-    if len(dimensions)==2:
+    if dimensions==2:
         atoms=np.full(N,Molecule(0,0))
         g=Gas(atoms,dimensions,P,T)
         init_v_x=g.initialize_velocity(T)
@@ -23,7 +23,7 @@ def init(N,dimensions,P=10**5,T=273.15):
             molecule=Molecule(i.position,i.velocity)
             atoms[index]=molecule
             index+=1
-    if len(dimensions)==3:
+    if dimensions==3:
         atoms=np.full(N,Molecule(0,0))
         g=Gas(atoms,dimensions,P,T)
         init_v_x=g.initialize_velocity(T)
@@ -42,15 +42,19 @@ def init(N,dimensions,P=10**5,T=273.15):
     a=Gas(atoms,dimensions,P,T)
     return(a)
 
-def time_evolution_inside(gas,dt,periodic=True):
+def time_evolution_inside(gas,dt,periodic=False): #check
     '''evolves individual molecules of the gas
     gas : instance of class Gas
-    dt : float - timestep of the simulation
+    dt : float - timestep of the simulation in nondimensional form
     periodic : bool = apply periodic conditions to the simulation or not'''
     v,pos=gas.velocities(),gas.positions()
     forces=np.array(gas.lj_forces())
+    kb=1.38064852e-23
     m=6.6335209e-26 #[kg]
-    v_after=np.array([(v[i]+(1/m)*forces[i]*dt) for i in range(len(gas.molecules))])
+    sigma_value=3.405e-10
+    eps_value=119.8/kb
+    dt=dt/np.sqrt(m*np.power(sigma_value,2)/eps_value) #nondimensional form of the timestep
+    v_after=np.array([(v[i]+forces[i]*dt) for i in range(len(gas.molecules))]) #m is removed as the nondimensional form of the equation does not include m
     pos_after=np.array([(pos[i]+v[i]*dt) for i in range(len(gas.molecules))])
     molecules=np.full(len(gas.molecules),Molecule(0,0))
     molecules=np.array([Molecule(pos_after[i],v_after[i]) for i in range(len(gas.molecules))])
@@ -62,7 +66,7 @@ def time_evolution_inside(gas,dt,periodic=True):
         g=Gas(molecules_periodic,gas.dimensions,gas.pressure,gas.temperature)
     return(g)
 
-def time_evolution(gas,N,dt,periodic=True):
+def time_evolution(gas,N,dt,periodic=False):
     '''evolves gas simulation in time
     gas : instance of class Gas
     N : into = number of simulation steps
@@ -102,39 +106,30 @@ class Gas:
         elif len(dimensions)==3:
             self.volume=dimensions[0]*dimensions[1]*dimensions[2]
             
-    def k_B(self):
-        ''' Calculation of Boltzmann constant for the simulation
     
-        parameters:
-        P = pressure [Pa]
-        V= volume [m^3]
-        T = temperature [K]
-        N = number of gas molecules in the simulation '''
-        return((self.pressure*self.volume)/(self.temperature*len(self.molecules)))
-    
-    def lj_potentials_between_pairs(self, differenciate=True):
+    def lj_potentials_between_pairs(self, differenciate=True): #check
         ''' computes Lennard Jones potential between a pair of molecules'''
-        def equation(sigma,eps,r_abs):
-            return((4*eps*((sigma/r_abs)**12-(sigma/r_abs)**6)))
+        def equation(r_abs):
+            return((4*((1/r_abs)**12-(1/r_abs)**6))) #nondimensional form of the lenard jones potential
     
         sigma = sym.Symbol('sigma')
         eps = sym.Symbol('eps')
         r_abs=sym.Symbol('r_abs')
-    
+        kb=1.38064852e-23
         sigma_value=3.405e-10
-        eps_value=119.8/self.k_B()
+        eps_value=119.8/kb
         r=np.zeros(len(self.couples_of_molecules()))
         if self.dimension_2D():
             r=np.array([np.sqrt((abs(i[0][0]-i[1][0]))**2+(abs(i[0][1]-i[1][1]))**2) for i in self.couples_of_molecules()])
         if self.dimension_3D():
             r=np.array([np.sqrt((abs(i[0][0]-i[1][0]))**2+(abs(i[0][1]-i[1][1]))**2+(abs(i[0][2]-i[1][2]))**2) for i in self.couples_of_molecules()])   
         potentials=np.zeros(len(self.couples_of_molecules()))
-        eqn=equation(sigma,eps,r_abs)
-        potentials=np.array([eqn.evalf(subs={sigma: sigma_value, eps: eps_value, r_abs:i}) for i in r])
+        eqn=equation(r_abs)
+        potentials=np.array([eqn.evalf(subs={r_abs:i}) for i in r])
         
         if differenciate:
-            eqn=sym.diff(equation(sigma,eps,r_abs), r_abs)
-            potentials=np.array([eqn.evalf(subs={sigma: sigma_value, eps: eps_value, r_abs:i}) for i in r])
+            eqn=sym.diff(equation(sigma), r_abs)
+            potentials=np.array([eqn.evalf(subs={r_abs:i}) for i in r])
         return(potentials)
     
     def lj_potentials(self):
@@ -165,8 +160,9 @@ class Gas:
         return(dim3)
 
     def positions(self):
-        '''Returns positions of all gas molecules'''
-        positions= np.array([m.position for m in self.molecules])
+        '''Returns positions of all gas molecules in function of sigma'''
+        sigma_value=3.405e-10
+        positions= np.array([m.position for m in self.molecules])/sigma_value
         return(positions) 
         
     def position_periodic(self):
@@ -185,7 +181,7 @@ class Gas:
         return(couples)
     
     def atomic_distances(self):
-        '''returns distances between all iterated pairs of molecules in the simulation corresponding to pairs printed by couples_of_molecules() function'''
+        '''returns the distances in function of sigma between all iterated pairs of molecules in the simulation corresponding to pairs printed by couples_of_molecules() function'''
         r=np.zeros(len(self.couples_of_molecules()))
         if self.dimension_2D():
             r=np.array([np.sqrt((abs(i[0][0]-i[1][0]))**2+(abs(i[0][1]-i[1][1]))**2) for i in self.couples_of_molecules()])
