@@ -56,6 +56,8 @@ the code supports any number of gas molecules with any initial energy and positi
 2) correction of function that generates randomly distributed velocities of molecules at given temperature
 3) energy of the system isnt's conserved because the velocities only keep increasing. don't know how to correct for that yet.
 4) as suggested by the TA the code was enchanced to benefit from the speedups provided by numpy
+5) code expanded to 3D
+
 
 ## Week 3
 (due 28 February 2021, 23:59)
