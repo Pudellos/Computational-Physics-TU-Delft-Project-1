@@ -57,6 +57,7 @@ the code supports any number of gas molecules with any initial energy and positi
 3) energy of the system isnt's conserved because the velocities only keep increasing. don't know how to correct for that yet.
 4) as suggested by the TA the code was enchanced to benefit from the speedups provided by numpy
 5) code expanded to 3D
+6) the periodic boundary conditions work in a sense that once a molecule passes the boundary of the box it reapears on the other side with the same velocity as it would have if it continued outside of the box.
 
 
 ## Week 3
