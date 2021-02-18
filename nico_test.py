@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy import random
 
+#nondimensionalistation still needed
+
 def force(i,x,size):#returns force vector (d dimensions) acting on particle i given the positions of all particles (x)
     e = 1#119.8*1.38*(10**-23) #epsilon
     S = 1#3.405*(10**-10) #sigma
