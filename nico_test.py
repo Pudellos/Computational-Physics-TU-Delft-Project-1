@@ -24,7 +24,13 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, size):
     v = np.zeros((N,box_dim))+v0
     F = np.zeros((N,box_dim))
     m = 1#6.6335209*(10**-26) #mass
+    dx= np.zeros((num_tsteps,1))
+    dy= np.zeros((num_tsteps,1))
     for i in range(num_tsteps): #time evolution
+        dx[i]= np.power((np.power(x[0,0]-x[1,0],2)),1/2)
+        dy[i]= np.power((np.power(x[0,1]-x[1,1],2)),1/2)
+        #dx[i]= np.power(np.sum(np.power(x[0,0]-x[1,0],2),1),1/2)
+        #dy[i]= np.power(np.sum(np.power(x[0,1]-x[1,1],2),1),1/2)
         x=x+v*timestep #update position
         v=v+F*timestep/m #update velocity
         for k in range(N): #calculate force acting on every particle
@@ -34,7 +40,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, size):
                     x[k,a]=x[k,a]-size
                 if x[k,a] < 0:
                     x[k,a]=x[k,a]+size
-    return x,v
+    return x,v,dx,dy
 
 def energy(x,v): #returns total energy in the system (Lenard-Jones potential + kinetic)
     e = 1#119.8*1.38*(10**-23) #epsilon
