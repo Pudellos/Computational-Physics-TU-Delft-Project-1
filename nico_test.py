@@ -6,14 +6,14 @@ from numpy import random
 
 def force(i,x,size):#returns force vector (d dimensions) acting on particle i given the positions of all particles (x)
     e = 1#119.8*1.38*(10**-23) #epsilon
-    S = 1#3.405*(10**-10) #sigma
+    S = 0.1#3.405*(10**-10) #sigma
     xr = np.concatenate((x[0:i,:],x[i+1:len(x),:])) #remove particle i from matrix x to aviod self-interaction
     deltax=x[i,:]-xr
-    deltax=np.where(deltax > (-size/2),deltax, deltax-size) #distances smaller than -size/2 get - size term
-    deltax=np.where(deltax < (size/2),deltax, deltax+size)  #distances larger than size/2 get + size term
+    deltax=np.where(deltax < (-size/2),deltax+size, deltax) #distances smaller than -size/2 get - size term
+    deltax=np.where(deltax > (size/2),deltax-size, deltax)  #distances larger than size/2 get + size term
     r = np.power(np.sum(np.power(deltax,2),1),1/2) #calculate distance between i and all particles
-    F = -np.dot(np.transpose(deltax),(48*e*(np.power(S,12)/np.power(r,14)-0.5*np.power(S,6)/np.power(r,8)))) #sum of all Lenard-Jones vectors
-    return F
+    F = np.dot(np.transpose(deltax),(48*e*(np.power(S,12)/np.power(r,14)-0.5*np.power(S,6)/np.power(r,8)))) #sum of all Lenard-Jones vectors
+    return F, deltax
 
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, size):
@@ -34,13 +34,13 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, size):
         x=x+v*timestep #update position
         v=v+F*timestep/m #update velocity
         for k in range(N): #calculate force acting on every particle
-            F[k]=force(k,x,size)
+            F[k], deltax = force(k,x,size)
             for a in range(box_dim): #apply periodic boundary conditions (in d dimensions) for all particles
                 if x[k,a] > size:
                     x[k,a]=x[k,a]-size
                 if x[k,a] < 0:
                     x[k,a]=x[k,a]+size
-    return x,v,dx,dy
+    return x,v,dx,dy,deltax
 
 def energy(x,v): #returns total energy in the system (Lenard-Jones potential + kinetic)
     e = 1#119.8*1.38*(10**-23) #epsilon
