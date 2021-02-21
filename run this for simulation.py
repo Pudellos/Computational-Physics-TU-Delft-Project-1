@@ -52,4 +52,4 @@ x, v, dx, deltax, ULJ, EV = simulate(init_pos, init_vel, num_tsteps, timestep, b
 
 plt.figure(5)
 plt.plot(x[:,0],x[:,1],'ro')
-plt.title('particle that started at the edge is pulled to the other side and is now near x=0')
+plt.title('particle that started at the edge x=99.99 is pulled to the other side and is now near x=0')
