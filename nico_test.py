@@ -24,27 +24,27 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, size):
     v = np.zeros((N,box_dim))+v0
     F = np.zeros((N,box_dim))
     dx= np.zeros((num_tsteps,1))
-    dy= np.zeros((num_tsteps,1))
+    ULJ= np.zeros((num_tsteps,1))
+    EV= np.zeros((num_tsteps,1))
     for i in range(num_tsteps): #time evolution
-        dx[i]= np.power((np.power(x[0,0]-x[1,0],2)),1/2)
-        dy[i]= np.power((np.power(x[0,1]-x[1,1],2)),1/2)
+        dx[i]= np.power(np.sum(np.power(x[0,:]-x[1,:],2)),1/2)
+        U, V = energy(x,v)
+        ULJ[i]=U
+        EV[i]= V
         x=x+v*timestep #update position
         v=v+F*timestep #update velocity
         x=np.where(x>size,x-size,x) #apply periodic BC
         x=np.where(x<0,x+size,x) #apply periodic BC
         for k in range(N): #calculate force acting on every particle
             F[k], deltax = force(k,x,size)
-    return x,v,dx,dy,deltax
+    return x,v,dx,deltax,ULJ,EV
 
 def energy(x,v): #returns total energy in the system (Lenard-Jones potential + kinetic)
-    e = 1#119.8*1.38*(10**-23) #epsilon
-    S = 1#3.405*(10**-10) #sigma
-    m = 1#6.6335209*(10**-26) #mass
     ULJ=0
     EV=0
     for i in range(len(x)):
         xr = np.concatenate((x[0:i,:],x[i+1:len(x),:])) #remove particle i from matrix x to aviod self-interaction
         r = np.power(np.sum(np.power(xr-x[i,:],2),1),1/2) #calculate distance between i and all particles
-        ULJ = ULJ + sum(4*e*(np.power(S,12)/np.power(r,12)-np.power(S,6)/np.power(r,6))) #sum of all L-J potentials for partical i
-    EV=0.5*m*sum(np.sum(np.power(v,2),1)) #sum of the the kinetic energy of all particles
+        ULJ = ULJ + sum(4*(1/np.power(r,12)-1/np.power(r,6))) #sum of all L-J potentials for partical i
+    EV=0.5*sum(np.sum(np.power(v,2),1)) #sum of the the kinetic energy of all particles
     return ULJ, EV
