@@ -105,6 +105,8 @@ def atomic_distances(pos, box_dim):
         The distance between particles
     """
     rel_pos = pos[:, np.newaxis] - pos
+    rel_pos=np.where(rel_pos < (-box_dim/2),rel_pos+box_dim, rel_pos) #distances smaller than -size/2 get + size term
+    rel_pos=np.where(rel_pos > (box_dim/2),rel_pos-box_dim, rel_pos)  #distances larger than size/2 get - size term
     rel_dist = np.linalg.norm(rel_pos, axis=2)    
     return (rel_pos, rel_dist)
 
