@@ -105,6 +105,10 @@ def atomic_distances(pos, box_dim):
         The distance between particles
     """
     rel_pos = pos[:, np.newaxis] - pos
+
+    rel_pos = np.where(rel_pos < (-box_dim / 2), rel_pos + box_dim, rel_pos) #distances smaller than -size/2 get + size term
+    rel_pos = np.where(rel_pos > ( box_dim / 2), rel_pos - box_dim, rel_pos)  #distances larger than size/2 get - size ter
+
     rel_dist = np.linalg.norm(rel_pos, axis=2)    
     return (rel_pos, rel_dist)
 
@@ -216,17 +220,15 @@ def init_velocity(num_atoms, temp):
     """
     return np.random.normal(0, 5, (num_atoms, 2))
 
-np.random.seed(1)
-
-num_tsteps = 5
+num_tsteps = 800
 num_atoms = 16
 box_dim = 20
 timestep = 0.004
 
+np.random.seed(1)
 init_vel = init_velocity(num_atoms, 0)
 init_pos = fcc_lattice(num_atoms, box_dim) #Random positions: np.random.uniform(0, box_dim, (num_atoms, 2))
 x, v, T, U = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim)
-
 
 # Animation and plotting stuff
 frames = num_tsteps
@@ -245,21 +247,17 @@ def animate(i):
     
 anim = matplotlib.animation.FuncAnimation(fig, animate, frames=frames, interval=1)
 anim
-
 #anim.save('myAnimation.gif', writer='imagemagick', fps=20)
-#plt.figure(2)
-#for k in range(len(x[0])):
-    #plt.plot(x[0,k,0], x[0,k,1], 'r.')
-#plt.xlim(0, box_dim)
-#plt.ylim(0, box_dim)
 
-plt.figure(2)
-plt.plot(U)
 print(T)
 print(U)
-plt.plot(T)
-plt.plot(T+U)
+plt.figure(2)
+t = timestep * np.arange(0,num_tsteps)
+plt.plot(t, U, label = 'potential energy')
+plt.plot(t, T, label = 'kinetic energy')
+plt.plot(t, T+U, label = 'total energy')
+plt.xlabel(r'Time (in units of $\sqrt{\frac{m\sigma^2}{\epsilon}}$)')
+plt.ylabel(r'Energy (in units of $\epsilon$)')
 plt.ylim(-100, 1000)
-
-
+plt.legend()
 plt.show()
