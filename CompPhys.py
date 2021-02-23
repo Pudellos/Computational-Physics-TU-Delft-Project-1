@@ -11,7 +11,6 @@ plt.rcParams['figure.dpi']=100
 plt.rcParams["animation.html"] = "jshtml"
 plt.rcParams['animation.convert_path'] = "F:/Python"
 
-
 ### Constants ###
 k_B = 1.380649e-23  #J K^-1
 eps = 119.8 * k_B   # J
@@ -46,26 +45,31 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
     p : all momenta
     """
     h = timestep # Shorther way to deal with timestep :)
-    x = np.ndarray(shape = (num_tsteps, num_atoms, 2))
-    v = np.ndarray(shape = (num_tsteps, num_atoms, 2)) # Stores positions and velocities for every timestep
-    T = np.zeros(num_tsteps)
-    U = np.zeros(num_tsteps) # Kinetic and potential energy    
+    x = np.ndarray(shape = (num_tsteps, num_atoms, 2)) # Stores velocities for every timestep
+    v = np.ndarray(shape = (num_tsteps, num_atoms, 2)) # Stores positions for every timestep
+    F = np.ndarray(shape = (num_tsteps, num_atoms, 2)) # Stores force for every timestep
+
+    T = np.zeros(num_tsteps) # Kinetic energy
+    U = np.zeros(num_tsteps) # Potential energy    
     
-    # Initialize position and velocity
+    # Initialize position, velocity and force
     x[0] = init_pos
     v[0] = init_vel
 
+    # Calculate the energies and force for thwe first timestep
     rel_pos, rel_dist = atomic_distances(x[0], box_dim)
     U[0] = potential_energy(rel_dist)
     T[0] = kinetic_energy(v[0])
+    F[0] = lj_force(rel_pos, rel_dist)
 
     for i in range(1, num_tsteps):
       
         rel_pos, rel_dist = atomic_distances(x[i-1], box_dim)
-        F = lj_force(rel_pos, rel_dist)
+        F[i] = lj_force(rel_pos, rel_dist)
         
-        x[i] = x[i - 1] + v[i - 1] * h
-        v[i] = v[i - 1] + F * h
+        # Verlet method to calculate new position and velocity
+        x[i] = x[i - 1] + v[i - 1] * h + (h**2 / 2) * F[i]
+        v[i] = v[i - 1] + (h / 2) * ( F[i] + F[i - 1] )
 
         # Periodic boundary conditions
         x[i, :, 0] = np.where( x[i, :, 0] < box_dim  , x[i, :, 0], x[i, :, 0] % box_dim)
@@ -73,6 +77,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         x[i, :, 1] = np.where( x[i, :, 1] < box_dim  , x[i, :, 1], x[i, :, 1] % box_dim)
         x[i, :, 1] = np.where( x[i, :, 1] > 0        , x[i, :, 1], x[i, :, 1] % box_dim)
 
+        # Calculate the energies
         T[i] = kinetic_energy(v[i])
         U[i] = potential_energy(rel_dist)
     
@@ -211,15 +216,19 @@ def init_velocity(num_atoms, temp):
     """
     return np.random.normal(0, 5, (num_atoms, 2))
 
-num_tsteps = 1000
+np.random.seed(1)
+
+num_tsteps = 5
 num_atoms = 16
-box_dim = 10
+box_dim = 20
 timestep = 0.004
 
 init_vel = init_velocity(num_atoms, 0)
-init_pos = fcc_lattice(num_atoms, box_dim) #np.random.uniform(0, box_dim, (num_atoms, 2))
+init_pos = fcc_lattice(num_atoms, box_dim) #Random positions: np.random.uniform(0, box_dim, (num_atoms, 2))
 x, v, T, U = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim)
 
+
+# Animation and plotting stuff
 frames = num_tsteps
 fig, ax = plt.subplots()
 for k in range(len(x[0])):
@@ -250,7 +259,7 @@ print(T)
 print(U)
 plt.plot(T)
 plt.plot(T+U)
-#plt.ylim(-100, 1000)
+plt.ylim(-100, 1000)
 
 
 plt.show()
