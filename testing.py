@@ -6,6 +6,7 @@ you have a good reason to do so.
 import numpy as np
 import matplotlib.pyplot as plt 
 import matplotlib.animation
+import time
 
 plt.rcParams['figure.dpi']=100
 plt.rcParams["animation.html"] = "jshtml"
@@ -200,11 +201,10 @@ def potential_energy(rel_dist):
         The total potential energy of the system.
     """
     r = rel_dist
-    #print(r)
-    U = 4 * (np.power(r, -12, where= r!=0) - np.power(r, -6, where= r!=0) )
+    
+    U = 4 * (np.power(r, -12, where=~np.isclose(r,0)) - np.power(r, -6, where=~np.isclose(r,0)) )
     U = np.sum(U)    
     return U / 2
-
 
 def init_velocity(num_atoms, temp):
     """
