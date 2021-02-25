@@ -200,8 +200,7 @@ def potential_energy(rel_dist):
     float
         The total potential energy of the system.
     """
-    r = rel_dist
-    
+    r = np.copy(rel_dist)
     U = 4 * (np.power(r, -12, where=~np.isclose(r,0)) - np.power(r, -6, where=~np.isclose(r,0)) )
     U = np.sum(U)    
     return U / 2
@@ -224,14 +223,14 @@ def init_velocity(num_atoms, temp):
     """
     return np.random.normal(0, 5, (num_atoms, 2))
 
-num_tsteps = 40000
-num_atoms = 2
+num_tsteps = 20000
+num_atoms = 4
 box_dim = 10
 timestep = 0.0004
 
 np.random.seed(1)
-init_vel = np.array([[0,0],[0,1]])
-init_pos = np.array([[5,5],[5 - 2**(1/6),5]])
+init_vel = np.array([[0,0],[0,1],[1,0],[0.5,0.5]])
+init_pos = np.array([[5,5],[5 - 2**(1/6),5],[5,6],[4,4]])
 x, v, T, U, r = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim)
 
 """
@@ -263,8 +262,8 @@ anim = matplotlib.animation.FuncAnimation(fig, animate, frames=frames, interval=
 anim
 #anim.save('Figures-animations/test2.gif', writer='imagemagick', fps=30)
 
-print(T)
-print(U)
+# print(T)
+# print(U)
 
 plt.figure(2)
 t = timestep * np.arange(0,num_tsteps)
