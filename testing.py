@@ -74,10 +74,13 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim):
         # Verlet method to calculate new position and velocity
         x[i] = x[i - 1] + v[i - 1] * h + (h**2 / 2) * F[i]
         v[i] = v[i - 1] + (h / 2) * ( F[i] + F[i - 1] )
+<<<<<<< HEAD
         
         #Euler method to calculate new position and velocity
         #x[i] = x[i - 1] + v[i - 1] * h
         #v[i] = v[i - 1] + F * h
+=======
+>>>>>>> 0e774aee1ec8ae1d18fcf12362615b88871ef05a
 
         # Periodic boundary conditions
         x[i, :, 0] = np.where( x[i, :, 0] < box_dim  , x[i, :, 0], x[i, :, 0] % box_dim)
