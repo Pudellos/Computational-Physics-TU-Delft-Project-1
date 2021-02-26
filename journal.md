@@ -61,7 +61,9 @@ the code supports any number of gas molecules with any initial energy and positi
 
 
 ## Week 3
-(due 28 February 2021, 23:59)
+The code was extended to more than 2 particles. However, when we run the code for more than 8 particles, enery isn't conserved anymore. This could be because too large timesteps, or a too small simulation box. There seems too be a problem in conservation of energy when particles come too close. 
+
+![alt text](Figures-animations/potential_plot.png "Title Text")
 
 
 ## Week 4
