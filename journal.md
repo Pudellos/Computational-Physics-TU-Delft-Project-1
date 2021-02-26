@@ -61,9 +61,13 @@ the code supports any number of gas molecules with any initial energy and positi
 
 
 ## Week 3
-The code was extended to more than 2 particles. However, when we run the code for more than 8 particles, enery isn't conserved anymore. This could be because too large timesteps, or a too small simulation box. There seems too be a problem in conservation of energy when particles come too close. 
 
-![alt text](Figures-animations/potential_plot.png "Title Text")
+1) The code was extended to more than 2 particles. However, when we run the code for more than 8 particles, enery isn't conserved anymore. This could be because too large timesteps, or a too small simulation box. There seems too be a problem in conservation of energy when particles come too close. 
+2) Verlet and Euler method are both implemented and work, the difference in energy conservation is visable
+
+
+
+![alt text](Figures-animations/Euler Method Energy conservation.png "Title Text")
 
 
 ## Week 4
