@@ -62,13 +62,22 @@ the code supports any number of gas molecules with any initial energy and positi
 
 ## Week 3
 
-1) The code was extended to more than 2 particles. However, when we run the code for more than 8 particles, enery isn't conserved anymore. This could be because too large timesteps, or a too small simulation box. There seems too be a problem in conservation of energy when particles come too close. 
-2) Verlet and Euler method are both implemented and work, the difference in energy conservation is visable
-3) code split into two files: skeleton_ours.py which runs 'behind the scenes' and simulaiton.py which is the file where simulation happens. Run simulation.py as a python notebook to simulate the gas under chosen conditions.
+1) The code was extended to more than 2 particles. However, when we run the code for more than 8 particles, enery isn't conserved anymore. This could be because the timesteps are too large, or the simulation box could be too small. There also seems too be a problem in conservation of energy when particles come too close. In the Figure below you can see the simulation for 8 particles. The energy seems to be (approximately) conserved. Where there are peaks (meaning particles come close) a slight increase can be seen. 
 
+![alt text](Figures-animations/8_particles_energy.jpg "Title Text")
 
+2) Verlet and Euler method are both implemented and work, the difference in energy conservation is visable.
+In the Figure below you can see the simulation using the Euler method, and you can see that the total energy increases over time. 
 
 ![alt text](Figures-animations/Euler Method Energy conservation.png "Title Text")
+
+However, when we use the Verlet method, the total energy barely increases. The increases you see can be explained by the point we discussed before. You can definitely see that the Verlet method work better than the Euler method.
+
+![alt text](Figures-animations/Verlet Method Energy conservation.png "Title Text")
+
+3) The code has been reorganized, it has been split into two files: skeleton_ours.py which runs 'behind the scenes' and simulation.py which is the file where the simulation happens. Run simulation.py as a python notebook to simulate the gas under chosen conditions.
+
+
 
 
 ## Week 4
