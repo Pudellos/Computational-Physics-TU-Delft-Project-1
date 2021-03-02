@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation
 import time
 
+dim = 3
 num_tsteps = 20000
 num_atoms = 4
 box_dim = 10
@@ -13,7 +14,7 @@ timestep = 0.0004
 np.random.seed(1)
 init_vel = np.array([[0,0],[0,1],[1,0],[0.5,0.5]])
 init_pos = np.array([[5,5],[5 - 2**(1/6),5],[5,6],[4,4]])
-x, v, T, U, r = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms)
+x, v, T, U, r = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim)
 
 """
 N = 1000
@@ -26,6 +27,7 @@ plt.plot(UT)
 """
 
 # Animation and plotting stuff
+"""
 frames = num_tsteps
 fig, ax = plt.subplots()
 for k in range(len(x[0])):
@@ -43,10 +45,7 @@ def animate(i):
 anim = matplotlib.animation.FuncAnimation(fig, animate, frames=frames, interval=1)
 anim
 #anim.save('Figures-animations/test2.gif', writer='imagemagick', fps=30)
-
-# print(T)
-# print(U)
-
+"""
 plt.figure(2)
 t = timestep * np.arange(0,num_tsteps)
 plt.plot(t, U, label = 'potential energy')

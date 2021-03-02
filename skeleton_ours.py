@@ -1,8 +1,3 @@
-"""
-This is a suggestion for structuring your simulation code properly.
-However, it is not set in stone. You may modify it if you feel like
-you have a good reason to do so.
-"""
 import numpy as np
 import matplotlib.pyplot as plt 
 import matplotlib.animation
@@ -17,8 +12,9 @@ k_B = 1.380649e-23  #J K^-1
 eps = 119.8 * k_B   # J
 sigma = 3.405       # Angstrom
 m = 6.6e-26         # kg
+d = 2
 
-def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms):
+def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
@@ -46,9 +42,9 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms):
     p : all momenta
     """
     h = timestep # Shorther way to deal with timestep :)
-    x = np.ndarray(shape = (num_tsteps, num_atoms, 2)) # Stores velocities for every timestep
-    v = np.ndarray(shape = (num_tsteps, num_atoms, 2)) # Stores positions for every timestep
-    F = np.ndarray(shape = (num_tsteps, num_atoms, 2)) # Stores force for every timestep
+    x = np.ndarray(shape = (num_tsteps, num_atoms, dim)) # Stores velocities for every timestep
+    v = np.ndarray(shape = (num_tsteps, num_atoms, dim)) # Stores positions for every timestep
+    F = np.ndarray(shape = (num_tsteps, num_atoms, dim)) # Stores force for every timestep
     r = np.zeros(num_tsteps)
 
     T = np.zeros(num_tsteps) # Kinetic energy
@@ -66,13 +62,12 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms):
     r[0] = rel_dist[1, 0]
 
     for i in range(1, num_tsteps):
-      
-        rel_pos, rel_dist = atomic_distances(x[i-1], box_dim)
+        
+        # Verlet method to calculate new position and velocity
+        x[i] = x[i - 1] + v[i - 1] * h + (h**2 / 2) * F[i - 1]
+        rel_pos, rel_dist = atomic_distances(x[i], box_dim)
         F[i] = lj_force(rel_pos, rel_dist)
         r[i] = rel_dist[1, 0]
-
-        # Verlet method to calculate new position and velocity
-        x[i] = x[i - 1] + v[i - 1] * h + (h**2 / 2) * F[i]
         v[i] = v[i - 1] + (h / 2) * ( F[i] + F[i - 1] )
         
         #Euler method to calculate new position and velocity
@@ -80,10 +75,9 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms):
         #v[i] = v[i - 1] + F * h
 
         # Periodic boundary conditions
-        x[i, :, 0] = np.where( x[i, :, 0] < box_dim  , x[i, :, 0], x[i, :, 0] % box_dim)
-        x[i, :, 0] = np.where( x[i, :, 0] > 0        , x[i, :, 0], x[i, :, 0] % box_dim)
-        x[i, :, 1] = np.where( x[i, :, 1] < box_dim  , x[i, :, 1], x[i, :, 1] % box_dim)
-        x[i, :, 1] = np.where( x[i, :, 1] > 0        , x[i, :, 1], x[i, :, 1] % box_dim)
+        for d in range(dim):
+            x[i, :, d] = np.where( x[i, :, d] < box_dim  , x[i, :, d], x[i, :, d] % box_dim)
+            x[i, :, d] = np.where( x[i, :, d] > 0        , x[i, :, d], x[i, :, d] % box_dim)
 
         # Calculate the energies
         T[i] = kinetic_energy(v[i])
@@ -137,7 +131,7 @@ def lj_force(rel_pos, rel_dist):
     np.ndarray
         The net force acting on particle i due to all other particles
     """
-    r = np.array([rel_dist]*2).transpose()
+    r = np.array([rel_dist]*d).transpose()
     F = rel_pos * ( 48 * np.power(r, -14, where= r!=0) - 24 * np.power(r, -8, where= r!=0) )
     F = np.sum(F, axis=1)
     return F
@@ -160,7 +154,7 @@ def fcc_lattice(num_atoms, lat_const):
         Array of particle coordinates
     """
     N = num_atoms  
-    n = 2
+    n = d
     m = N**(1/n)
     dx = lat_const/(m+1) 
     x_T = []
@@ -225,59 +219,4 @@ def init_velocity(num_atoms, temp):
     vel_vec : np.ndarray
         Array of particle velocities
     """
-    return np.random.normal(0, 5, (num_atoms, 2))
-
-# num_tsteps = 20000
-# num_atoms = 4
-# box_dim = 10
-# timestep = 0.0004
-
-# np.random.seed(1)
-# init_vel = np.array([[0,0],[0,1],[1,0],[0.5,0.5]])
-# init_pos = np.array([[5,5],[5 - 2**(1/6),5],[5,6],[4,4]])
-# x, v, T, U, r = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim)
-
-# """
-# N = 1000
-# UT = np.zeros(N)
-# for i in range(N):
-#     x, v, T, U = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim)
-#     UT[i] = U[0]
-
-# plt.plot(UT)
-# """
-
-# # Animation and plotting stuff
-# frames = num_tsteps
-# fig, ax = plt.subplots()
-# for k in range(len(x[0])):
-#     ax.plot(x[0,k,0], x[0,k,1], 'r.')
-# ax.set_xlim(0, box_dim)
-# ax.set_ylim(0, box_dim)
-
-# def animate(i):
-#     ax.clear()
-#     ax.set_xlim(0, box_dim)
-#     ax.set_ylim(0, box_dim)
-#     for k in range(len(x[0])):
-#         ax.plot(x[i,k,0], x[i,k,1], 'r.')
-    
-# anim = matplotlib.animation.FuncAnimation(fig, animate, frames=frames, interval=1)
-# anim
-# #anim.save('Figures-animations/test2.gif', writer='imagemagick', fps=30)
-
-# # print(T)
-# # print(U)
-
-# plt.figure(2)
-# t = timestep * np.arange(0,num_tsteps)
-# plt.plot(t, U, label = 'potential energy')
-# plt.plot(t, T, label = 'kinetic energy')
-# plt.plot(t, T + U, label = 'total energy')
-# plt.xlabel(r'Time (in units of $\sqrt{\frac{m\sigma^2}{\epsilon}}$)')
-# plt.ylabel(r'Energy (in units of $\epsilon$)')
-# plt.legend()
-
-# plt.figure(3)
-# plt.plot(t, r)
-# plt.show()
+    return np.random.normal(0, 5, (num_atoms, d))
