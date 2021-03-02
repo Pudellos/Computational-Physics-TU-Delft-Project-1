@@ -137,7 +137,7 @@ def lj_force(rel_pos, rel_dist):
     return F
 
 
-def fcc_lattice(num_atoms, lat_const, dim):
+def fcc_lattice(num_atoms, box_dim, dim):
     """
     Initializes a system of atoms on an fcc lattice.
 
