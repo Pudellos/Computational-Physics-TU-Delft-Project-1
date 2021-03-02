@@ -14,7 +14,7 @@ sigma = 3.405       # Angstrom
 m = 6.6e-26         # kg
 d = 2
 
-def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, temp):
+def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
@@ -58,7 +58,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
     rel_pos, rel_dist = atomic_distances(x[0], box_dim)
     U[0] = potential_energy(rel_dist)
     T[0] = kinetic_energy(v[0])
-    F[0] = lj_force(rel_pos, rel_dist, dim)
+    F[0] = lj_force(rel_pos, rel_dist)
     r[0] = rel_dist[1, 0]
 
     for i in range(1, num_tsteps):
@@ -66,7 +66,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
         # Verlet method to calculate new position and velocity
         x[i] = x[i - 1] + v[i - 1] * h + (h**2 / 2) * F[i - 1]
         rel_pos, rel_dist = atomic_distances(x[i], box_dim)
-        F[i] = lj_force(rel_pos, rel_dist, dim)
+        F[i] = lj_force(rel_pos, rel_dist)
         r[i] = rel_dist[1, 0]
         v[i] = v[i - 1] + (h / 2) * ( F[i] + F[i - 1] )
         
@@ -83,10 +83,6 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
         T[i] = kinetic_energy(v[i])
         U[i] = potential_energy(rel_dist)
     
-        if((i % 500) == 0):
-            L = rescale_factor(temp, T[i], num_atoms, i)
-            v[i] = L * v[i]
-
         #print("x[%s]: \n" %i, x[i])
         #print("v[%s]: \n" %i, v[i])
 
@@ -119,7 +115,7 @@ def atomic_distances(pos, box_dim):
     return (rel_pos, rel_dist)
 
 
-def lj_force(rel_pos, rel_dist, dim):
+def lj_force(rel_pos, rel_dist):
     """
     Calculates the net forces on each atom.
 
@@ -135,7 +131,7 @@ def lj_force(rel_pos, rel_dist, dim):
     np.ndarray
         The net force acting on particle i due to all other particles
     """
-    r = np.array([rel_dist]*dim).transpose()
+    r = np.array([rel_dist]*d).transpose()
     F = rel_pos * ( 48 * np.power(r, -14, where= r!=0) - 24 * np.power(r, -8, where= r!=0) )
     F = np.sum(F, axis=1)
     return F
@@ -159,7 +155,6 @@ def fcc_lattice(num_atoms, lat_const, dim):
     """
     N = num_atoms  
     n = dim
-<<<<<<< HEAD
     UC = N/4
     AUC = np.ceil(UC**(1/dim))
     lc = box_dim/AUC
@@ -170,19 +165,9 @@ def fcc_lattice(num_atoms, lat_const, dim):
     x = np.append(x,a+[0.5,0,0.5], axis=0)
     x = np.append(x,a+[0,0.5,0.5], axis=0)
     x=lc*x
+    print("To fill the FCC lattice", len(x)-N,"particles were added for a total of", len(x))
     return x, len(x)
 
-=======
-    m = N**(1/n)
-    dx = lat_const/(m+1) 
-    x_T = []
-    for i in range(N):  
-        x = np.zeros(n)
-        for k in range(n):
-            x[k] = dx * int(1 + m * (i % m**(k+1) / m**(k+1)))
-        x_T.append(x)    
-    return np.array(x_T)
->>>>>>> ba01298409bfe9e8f91d1807478f417ed5b02313
 
 def kinetic_energy(vel):
     """
@@ -218,13 +203,11 @@ def potential_energy(rel_dist):
         The total potential energy of the system.
     """
     r = np.copy(rel_dist)
-    r[np.allclose(r, 0)] = np.inf
-    #U = 4 * (r**(-12) - r**(-6))
     U = 4 * (np.power(r, -12, where=~np.isclose(r,0)) - np.power(r, -6, where=~np.isclose(r,0)) )
     U = np.sum(U)    
     return U / 2
 
-def init_velocity(num_atoms, temp, dim):
+def init_velocity(num_atoms, temp):
     """
     Initializes the system with Gaussian distributed velocities.
 
@@ -240,10 +223,4 @@ def init_velocity(num_atoms, temp, dim):
     vel_vec : np.ndarray
         Array of particle velocities
     """
-    sigma = (k_B/eps) * temp
-    return np.random.normal(0, sigma, (num_atoms, dim))
-
-def rescale_factor(temp, kinetic_energy, num_atoms, i):
-    E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
-    print(i, E_kin, kinetic_energy)
-    return np.sqrt(E_kin / kinetic_energy)    
+    return np.random.normal(0, 5, (num_atoms, d))
