@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import matplotlib.animation
 import time
+import itertools
 
 plt.rcParams['figure.dpi']=100
 plt.rcParams["animation.html"] = "jshtml"
@@ -145,28 +146,36 @@ def fcc_lattice(num_atoms, box_dim, dim):
     ----------
     num_atoms : int
         The number of particles in the system
-    lattice_const : float
-        The lattice constant for an fcc lattice
-
+    box_dim : float
+        The dimension of the simulation box
+    dim : int
+        The number of dimensions we are looking at
     Returns
     -------
-    pos_vec : np.ndarray
+    x : np.ndarray
         Array of particle coordinates
     """
     N = num_atoms  
     n = dim
-    UC = N/4
-    AUC = np.ceil(UC**(1/dim))
-    lc = box_dim/AUC
+    if n==3:
+        ppuc=4 #particles per unit cell (3d)
+    else:
+        ppuc=2 #particles per unit cell (2d)
+    UC = N/ppuc #number of unit cells needed
+    AUC = np.ceil(UC**(1/dim)) #number of unit cells per axis
+    lc = box_dim/AUC #lattice constant
     L=np.arange(AUC)
-    comb = [p for p in itertools.product(L, repeat=n)]
+    comb = [p for p in itertools.product(L, repeat=n)] #all possible permutation to fill the whole lattice (all unit cells once)
     a = np.asarray(comb)
-    x = np.append(a,a+[0.5,0.5,0], axis=0)
-    x = np.append(x,a+[0.5,0,0.5], axis=0)
-    x = np.append(x,a+[0,0.5,0.5], axis=0)
+    if n==3:
+        x = np.append(a,a+[0.5,0.5,0], axis=0) #add basisvectors to unit fcc cell (3d)
+        x = np.append(x,a+[0.5,0,0.5], axis=0)
+        x = np.append(x,a+[0,0.5,0.5], axis=0)
+    if n==2:
+        x = np.append(a,a+[0.5,0.5], axis=0) #add basisvectors to unit fcc cell (2d)
     x=lc*x
-    print("To fill the FCC lattice", len(x)-N,"particles were added for a total of", len(x))
-    return x, len(x)
+    print("To fill the FCC lattice", len(x)-N,"particles were added for a total of", len(x),"particles.")
+    return x
 
 
 def kinetic_energy(vel):
