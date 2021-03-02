@@ -137,7 +137,7 @@ def lj_force(rel_pos, rel_dist):
     return F
 
 
-def fcc_lattice(num_atoms, lat_const):
+def fcc_lattice(num_atoms, lat_const, dim):
     """
     Initializes a system of atoms on an fcc lattice.
 
@@ -154,16 +154,19 @@ def fcc_lattice(num_atoms, lat_const):
         Array of particle coordinates
     """
     N = num_atoms  
-    n = d
-    m = N**(1/n)
-    dx = lat_const/(m+1) 
-    x_T = []
-    for i in range(N):  
-        x = np.zeros(n)
-        for k in range(n):
-            x[k] = dx * int(1 + m * (i % m**(k+1) / m**(k+1)))
-        x_T.append(x)    
-    return np.array(x_T)
+    n = dim
+    UC = N/4
+    AUC = np.ceil(UC**(1/dim))
+    lc = box_dim/AUC
+    L=np.arange(AUC)
+    comb = [p for p in itertools.product(L, repeat=n)]
+    a = np.asarray(comb)
+    x = np.append(a,a+[0.5,0.5,0], axis=0)
+    x = np.append(x,a+[0.5,0,0.5], axis=0)
+    x = np.append(x,a+[0,0.5,0.5], axis=0)
+    x=lc*x
+    return x, len(x)
+
 
 def kinetic_energy(vel):
     """
