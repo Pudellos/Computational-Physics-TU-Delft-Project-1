@@ -17,9 +17,22 @@ np.random.seed(1)
 #init_vel = np.array([[0,0],[0,1],[1,0],[0.5,0.5]])
 #init_pos = np.array([[5,5],[5 - 2**(1/6),5],[5,6],[4,4]])
 x, num_atoms = fcc_lattice(num_atoms, box_dim, dim)
-init_vel = (random.rand(num_atoms,dim)-0.5)*100
+mu, sigma = 0, 50
+init_vel=np.random.normal(mu, sigma, size=(num_atoms, dim))
 init_pos = x
 x, v, T, U, r = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim)
+
+'''
+SHOWING VELOCITY DISTRIBUTION IS RANDOM:
+mu, sigma = 0, 50
+init_vel=np.random.normal(mu, sigma, size=(1000, dim))
+plt.xlabel('init velocity')
+s=init_vel.flatten()
+count, bins, ignored = plt.hist(s, 30, density=True)
+plt.plot(bins,1/(sigma*np.sqrt(2 * np.pi))*np.exp( - (bins - mu)**2 / (2 * sigma**2) ),linewidth=2, color='r')
+plt.show()'''
+
+
 
 """
 N = 1000

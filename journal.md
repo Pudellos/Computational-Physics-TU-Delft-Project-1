@@ -77,6 +77,9 @@ However, when we use the Verlet method, the total energy barely increases. The i
 
 3) The code has been reorganized, it has been split into two files: skeleton_ours.py which runs 'behind the scenes' and simulation.py which is the file where the simulation happens. Run simulation.py as a python notebook to simulate the gas under chosen conditions.
 
+4) Velocity distribution is shown to be random (obeying Maxwell-Boltzmann). It's only visible for a large nnumber of atoms, eg.1000.
+
+![alt text](Figures-animations/1000_atoms_velocity_distribution.jpg "Title Text")
 
 
 
