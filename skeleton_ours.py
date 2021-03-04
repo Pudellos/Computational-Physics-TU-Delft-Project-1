@@ -13,7 +13,7 @@ k_B = 1.380649e-23  #J K^-1
 eps = 119.8 * k_B   # J
 sigma = 3.405       # Angstrom
 m = 6.6e-26         # kg
-d = 2
+d = 3
 
 def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim):
     """
@@ -175,7 +175,7 @@ def fcc_lattice(num_atoms, box_dim, dim):
         x = np.append(a,a+[0.5,0.5], axis=0) #add basisvectors to unit fcc cell (2d)
     x=lc*x
     print("To fill the FCC lattice", len(x)-N,"particles were added for a total of", len(x),"particles.")
-    return x
+    return x, len(x)
 
 
 def kinetic_energy(vel):

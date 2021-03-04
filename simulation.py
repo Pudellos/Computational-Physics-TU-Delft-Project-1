@@ -1,5 +1,6 @@
 import skeleton_ours
 from skeleton_ours import simulate
+from skeleton_ours import fcc_lattice
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt 
@@ -13,8 +14,11 @@ box_dim = 10
 timestep = 0.0004
 
 np.random.seed(1)
-init_vel = np.array([[0,0],[0,1],[1,0],[0.5,0.5]])
-init_pos = np.array([[5,5],[5 - 2**(1/6),5],[5,6],[4,4]])
+#init_vel = np.array([[0,0],[0,1],[1,0],[0.5,0.5]])
+#init_pos = np.array([[5,5],[5 - 2**(1/6),5],[5,6],[4,4]])
+x, num_atoms = fcc_lattice(num_atoms, box_dim, dim)
+init_vel = (random.rand(num_atoms,dim)-0.5)*100
+init_pos = x
 x, v, T, U, r = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim)
 
 """
