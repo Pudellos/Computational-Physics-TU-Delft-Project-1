@@ -144,7 +144,7 @@ def lj_force(rel_pos, rel_dist, dim):
     return F
 
 
-def fcc_lattice(num_atoms, box_dim, dim):
+def fcc_lattice(num_atoms, box_dim, dim, fill):
     """
     Initializes a system of atoms on an fcc lattice.
 
@@ -156,31 +156,31 @@ def fcc_lattice(num_atoms, box_dim, dim):
         The dimension of the simulation box
     dim : int
         The number of dimensions we are looking at
+    fill: int
+        If fill=0 the fcc lattice will only use num_atoms particles,
+        If fill is not 0 the fcc lattice will be completely filled
     Returns
     -------
     x : np.ndarray
         Array of particle coordinates
     """
-    N = num_atoms  
-    n = dim
-    if n==3:
-        ppuc=4 #particles per unit cell (3d)
-    else:
-        ppuc=2 #particles per unit cell (2d)
-    UC = N/ppuc #number of unit cells needed
+    ppuc=2*dim-2 #particles per unit cell (4 in 3d and 2 in 2d)
+    UC = num_atoms/ppuc #total number of unit cells needed
     AUC = np.ceil(UC**(1/dim)) #number of unit cells per axis
     lc = box_dim/AUC #lattice constant
     L=np.arange(AUC)
-    comb = [p for p in itertools.product(L, repeat=n)] #all possible permutation to fill the whole lattice (all unit cells once)
+    comb = [p for p in itertools.product(L, repeat=dim)] #all possible permutation to fill the whole lattice (all unit cells once)
     a = np.asarray(comb)
-    if n==3:
+    if dim==3:
         x = np.append(a,a+[0.5,0.5,0], axis=0) #add basisvectors to unit fcc cell (3d)
         x = np.append(x,a+[0.5,0,0.5], axis=0)
         x = np.append(x,a+[0,0.5,0.5], axis=0)
-    if n==2:
+    if dim==2:
         x = np.append(a,a+[0.5,0.5], axis=0) #add basisvectors to unit fcc cell (2d)
     x=lc*x
-    print("To fill the FCC lattice", len(x)-N,"particles were added for a total of", len(x),"particles.")
+    if fill==0:
+        x=x[0:num_atoms]
+    print("To fill the FCC lattice", len(x)-num_atoms,"particles were added for a total of", len(x),"particles.")
     return x, len(x)
 
 
