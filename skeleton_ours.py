@@ -246,3 +246,24 @@ def rescale_factor(temp, kinetic_energy, num_atoms, i):
     E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
     print(i, E_kin, kinetic_energy)
     return np.sqrt(E_kin / kinetic_energy)    
+
+def specific_heat(T,num_atoms):
+    '''
+    Calculates specific heat under constant volume of the simulated gas.
+    
+    Parameters
+    ----------
+    T : np.ndarray
+        kinetic energy
+    num_atoms : int
+        The total number of simulated atoms
+
+    Returns
+    -------
+    Cv : float
+        specific heat of the gas under constant volume condition'''
+    
+    mean=np.mean(T)
+    fluct=np.mean(T**2)-mean**2
+    Cv=((1-(3*num_atoms*fluct)/(2*mean))*(2/(3*num_atoms)))**-1
+    return(Cv)
