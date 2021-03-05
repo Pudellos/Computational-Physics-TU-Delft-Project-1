@@ -13,9 +13,8 @@ k_B = 1.380649e-23  #J K^-1
 eps = 119.8 * k_B   # J
 sigma = 3.405       # Angstrom
 m = 6.6e-26         # kg
-d = 3
 
-def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim):
+def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, temp):
     """
     Molecular dynamics simulation using the Euler or Verlet's algorithms
     to integrate the equations of motion. Calculates energies and other
@@ -59,7 +58,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim):
     rel_pos, rel_dist = atomic_distances(x[0], box_dim)
     U[0] = potential_energy(rel_dist)
     T[0] = kinetic_energy(v[0])
-    F[0] = lj_force(rel_pos, rel_dist)
+    F[0] = lj_force(rel_pos, rel_dist, dim)
     r[0] = rel_dist[1, 0]
 
     for i in range(1, num_tsteps):
@@ -67,7 +66,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim):
         # Verlet method to calculate new position and velocity
         x[i] = x[i - 1] + v[i - 1] * h + (h**2 / 2) * F[i - 1]
         rel_pos, rel_dist = atomic_distances(x[i], box_dim)
-        F[i] = lj_force(rel_pos, rel_dist)
+        F[i] = lj_force(rel_pos, rel_dist, dim)
         r[i] = rel_dist[1, 0]
         v[i] = v[i - 1] + (h / 2) * ( F[i] + F[i - 1] )
         
@@ -84,6 +83,13 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim):
         T[i] = kinetic_energy(v[i])
         U[i] = potential_energy(rel_dist)
     
+        #print(np.var(np.linalg.norm(rel_pos, axis=2)  v[i])/ (dim * (k_B/eps)))
+        if(np.isclose(temp, np.var(v[i])/ (dim * (k_B/eps)) )):
+            if((i % 500) == 0): # Also check if the desired temperature is reached!!!
+                L = rescale_factor(temp, T[i], num_atoms, i)
+                v[i] = L * v[i]
+
+
         #print("x[%s]: \n" %i, x[i])
         #print("v[%s]: \n" %i, v[i])
 
@@ -116,7 +122,7 @@ def atomic_distances(pos, box_dim):
     return (rel_pos, rel_dist)
 
 
-def lj_force(rel_pos, rel_dist):
+def lj_force(rel_pos, rel_dist, dim):
     """
     Calculates the net forces on each atom.
 
@@ -132,7 +138,7 @@ def lj_force(rel_pos, rel_dist):
     np.ndarray
         The net force acting on particle i due to all other particles
     """
-    r = np.array([rel_dist]*d).transpose()
+    r = np.array([rel_dist]*dim).transpose()
     F = rel_pos * ( 48 * np.power(r, -14, where= r!=0) - 24 * np.power(r, -8, where= r!=0) )
     F = np.sum(F, axis=1)
     return F
@@ -212,11 +218,12 @@ def potential_energy(rel_dist):
         The total potential energy of the system.
     """
     r = np.copy(rel_dist)
+    r[np.allclose(r, 0)] = np.inf
     U = 4 * (np.power(r, -12, where=~np.isclose(r,0)) - np.power(r, -6, where=~np.isclose(r,0)) )
     U = np.sum(U)    
     return U / 2
 
-def init_velocity(num_atoms, temp):
+def init_velocity(num_atoms, temp, dim):
     """
     Initializes the system with Gaussian distributed velocities.
 
@@ -231,5 +238,11 @@ def init_velocity(num_atoms, temp):
     -------
     vel_vec : np.ndarray
         Array of particle velocities
-    """
-    return np.random.normal(0, 5, (num_atoms, d))
+    """    
+    sigma = (k_B/eps) * temp
+    return np.random.normal(0, sigma, (num_atoms, dim))
+
+def rescale_factor(temp, kinetic_energy, num_atoms, i):
+    E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
+    print(i, E_kin, kinetic_energy)
+    return np.sqrt(E_kin / kinetic_energy)    
