@@ -163,6 +163,8 @@ def fcc_lattice(num_atoms, box_dim, dim, fill):
     -------
     x : np.ndarray
         Array of particle coordinates
+    len(x) : int
+        Number of particles in the fcc lattice
     """
     ppuc=2*dim-2 #particles per unit cell (4 in 3d and 2 in 2d)
     UC = num_atoms/ppuc #total number of unit cells needed
