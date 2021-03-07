@@ -242,7 +242,7 @@ def init_velocity(num_atoms, temp, dim):
         Array of particle velocities
     """    
     sigma = (k_B/eps) * temp
-    return np.random.normal(0, sigma, (num_atoms, dim))
+    return np.random.normal(0, sigma, (num_atoms, dim)), sigma
 
 def rescale_factor(temp, kinetic_energy, num_atoms, i):
     E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
@@ -269,3 +269,29 @@ def specific_heat(T,num_atoms):
     fluct=np.mean(T**2)-mean**2
     Cv=((1-(3*num_atoms*fluct)/(2*mean))*(2/(3*num_atoms)))**-1
     return(Cv)
+
+def mean_squared_displacement(x, box_dim):
+    
+    '''
+    Calculates the mean squared displacement on each atom and the average. The first timestep is the reference position for the calculation.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Positions of all particles for all timesteps
+    box_dim : np.ndarray
+        Linear size of the domain
+        
+    Returns
+    -------
+    MSD : np.ndarray
+        MSD(t) for all individual particles
+    ASMD: np.ndarray
+        Averaged MSD(t) over all particles
+    '''
+    D=x[1:len(x)]-x[0] #Calculate difference compared to its initial position
+    D = np.where(D > 0.9*box_dim , D - box_dim, D) #makes sure that periodic boundary conditions dont let the MSD jump
+    D = np.where(D < -0.9*box_dim , D + box_dim, D)
+    MSD = np.sum(np.power(D,2), axis=2)
+    AMSD = np.sum(MSD,1)/x.shape[1]
+    return MSD, AMSD
