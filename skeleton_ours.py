@@ -61,6 +61,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
     F[0] = lj_force(rel_pos, rel_dist, dim)
     r[0] = rel_dist[1, 0]
 
+    var = 0
+
     for i in range(1, num_tsteps):
         
         # Verlet method to calculate new position and velocity
@@ -83,12 +85,16 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
         T[i] = kinetic_energy(v[i])
         U[i] = potential_energy(rel_dist)
     
-        #print(np.var(np.linalg.norm(rel_pos, axis=2)  v[i])/ (dim * (k_B/eps)))
-        if(np.isclose(temp, np.var(v[i])/ (dim * (k_B/eps)) )):
-            if((i % 500) == 0): # Also check if the desired temperature is reached!!!
-                L = rescale_factor(temp, T[i], num_atoms, i)
+        c = 500         
+        if((i % c) == 0 and var == 0): 
+                E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
+                E_avg = np.mean(T[i-c:i])
+                L = np.sqrt(E_kin/ E_avg) 
                 v[i] = L * v[i]
-
+                
+                if(np.abs(E_kin - E_avg) < 0.05):
+                    var = 1
+                    print("Temperature is: ", E_avg / ((num_atoms - 1) * (3 / 2) * (k_B / eps)) )
 
         #print("x[%s]: \n" %i, x[i])
         #print("v[%s]: \n" %i, v[i])
@@ -243,11 +249,6 @@ def init_velocity(num_atoms, temp, dim):
     """    
     sigma = (k_B/eps) * temp
     return np.random.normal(0, sigma, (num_atoms, dim)), sigma
-
-def rescale_factor(temp, kinetic_energy, num_atoms, i):
-    E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
-    print(i, E_kin, kinetic_energy)
-    return np.sqrt(E_kin / kinetic_energy)    
 
 def specific_heat(T,num_atoms):
     '''
