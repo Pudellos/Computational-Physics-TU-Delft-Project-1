@@ -140,7 +140,7 @@ def lj_force(rel_pos, rel_dist, dim):
     """
     r = np.array([rel_dist]*dim).transpose()
     F = rel_pos * ( 48 * np.power(r, -14, where= r!=0) - 24 * np.power(r, -8, where= r!=0) )
-    F = np.sum(F, axis=1)
+    F = np.sum(F, axis=1)*10**-10
     return F
 
 

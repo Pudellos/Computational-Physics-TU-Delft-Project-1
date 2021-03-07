@@ -91,6 +91,10 @@ However, when we use the Verlet method, the total energy barely increases. The i
 
 ![alt text](Figures-animations/Linear behaviour MSD.png "Title Text")
 
+3) The MSD calculation also shows parabollic behaviour for lower densities and smaller forces. Here the MSD was calulated for a much lower particle density and the lenard jones force was multiplied by a factor 10^-10 to simulate a gas without collisions. Then kT/m can be calculated in 2 different ways, as the standard deviation of the velocity distribution (sigma^2 = 0.6967650591832241) and the prefactor (p[0]/3=0.6868840872281853) of the parabolla which was fitted to the MSD. The values are very close to eachother confirms that everything is working properly.
+
+![alt text](Figures-animations/Parabollic behaviour of the MSD.png "Title Text")
+
 
 
 ## Week 5
