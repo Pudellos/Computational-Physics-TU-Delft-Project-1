@@ -82,9 +82,15 @@ However, when we use the Verlet method, the total energy barely increases. The i
 ![alt text](Figures-animations/1000_atoms_velocity_distribution.jpg "Title Text")
 
 
-
 ## Week 4
 (due 7 March 2021, 23:59)
+
+1) Added a function that can make an FCC lattice for a given amount of particles, box size and number of dimensions. It can also fill up the FCC lattice completely by adding extra particles.
+
+2) Added a function calculates the individual MSD's and the average MSD of all particles. Periodic boundary conditions were considered. For a very high density of particles where the interactions are relevant we can see linear behaviour of the average MSD. (Here the parameters are: dim = 3, num_tsteps = 1000, num_atoms = 500, box_dim = 10, temp=100 and timestep = 0.0004)
+
+![alt text](Figures-animations/Linear behaviour MSD.png "Title Text")
+
 
 
 ## Week 5
