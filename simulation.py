@@ -14,11 +14,12 @@ num_atoms = 4
 box_dim = 10
 timestep = 0.0004
 temp = 100
+fill=0
 
 np.random.seed(1)
 #init_vel = np.array([[0,0],[0,1],[1,0],[0.5,0.5]])
 #init_pos = np.array([[5,5],[5 - 2**(1/6),5],[5,6],[4,4]])
-x, num_atoms = fcc_lattice(num_atoms, box_dim, dim)
+x, num_atoms = fcc_lattice(num_atoms, box_dim, dim, fill)
 init_vel= init_velocity(num_atoms, temp, dim)
 init_pos = x
 x, v, T, U, r = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, temp)
@@ -65,3 +66,6 @@ plt.legend()
 #plt.figure(3)
 #plt.plot(t, r)
 plt.show()
+
+print('specific heat computation:'')
+print(skeleton_ours.specific_heat(T,num_atoms))

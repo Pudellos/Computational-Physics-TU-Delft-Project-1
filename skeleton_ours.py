@@ -61,6 +61,8 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
     F[0] = lj_force(rel_pos, rel_dist, dim)
     r[0] = rel_dist[1, 0]
 
+    var = 0
+
     for i in range(1, num_tsteps):
         
         # Verlet method to calculate new position and velocity
@@ -83,12 +85,16 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
         T[i] = kinetic_energy(v[i])
         U[i] = potential_energy(rel_dist)
     
-        #print(np.var(np.linalg.norm(rel_pos, axis=2)  v[i])/ (dim * (k_B/eps)))
-        if(np.isclose(temp, np.var(v[i])/ (dim * (k_B/eps)) )):
-            if((i % 500) == 0): # Also check if the desired temperature is reached!!!
-                L = rescale_factor(temp, T[i], num_atoms, i)
+        c = 500         
+        if((i % c) == 0 and var == 0): 
+                E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
+                E_avg = np.mean(T[i-c:i])
+                L = np.sqrt(E_kin/ E_avg) 
                 v[i] = L * v[i]
-
+                
+                if(np.abs(E_kin - E_avg) < 0.05):
+                    var = 1
+                    print("Temperature is: ", E_avg / ((num_atoms - 1) * (3 / 2) * (k_B / eps)) )
 
         #print("x[%s]: \n" %i, x[i])
         #print("v[%s]: \n" %i, v[i])
@@ -144,7 +150,7 @@ def lj_force(rel_pos, rel_dist, dim):
     return F
 
 
-def fcc_lattice(num_atoms, box_dim, dim):
+def fcc_lattice(num_atoms, box_dim, dim, fill):
     """
     Initializes a system of atoms on an fcc lattice.
 
@@ -156,31 +162,33 @@ def fcc_lattice(num_atoms, box_dim, dim):
         The dimension of the simulation box
     dim : int
         The number of dimensions we are looking at
+    fill: int
+        If fill=0 the fcc lattice will only use num_atoms particles,
+        If fill is not 0 the fcc lattice will be completely filled
     Returns
     -------
     x : np.ndarray
         Array of particle coordinates
+    len(x) : int
+        Number of particles in the fcc lattice
     """
-    N = num_atoms  
-    n = dim
-    if n==3:
-        ppuc=4 #particles per unit cell (3d)
-    else:
-        ppuc=2 #particles per unit cell (2d)
-    UC = N/ppuc #number of unit cells needed
+    ppuc=2*dim-2 #particles per unit cell (4 in 3d and 2 in 2d)
+    UC = num_atoms/ppuc #total number of unit cells needed
     AUC = np.ceil(UC**(1/dim)) #number of unit cells per axis
     lc = box_dim/AUC #lattice constant
     L=np.arange(AUC)
-    comb = [p for p in itertools.product(L, repeat=n)] #all possible permutation to fill the whole lattice (all unit cells once)
+    comb = [p for p in itertools.product(L, repeat=dim)] #all possible permutation to fill the whole lattice (all unit cells once)
     a = np.asarray(comb)
-    if n==3:
+    if dim==3:
         x = np.append(a,a+[0.5,0.5,0], axis=0) #add basisvectors to unit fcc cell (3d)
         x = np.append(x,a+[0.5,0,0.5], axis=0)
         x = np.append(x,a+[0,0.5,0.5], axis=0)
-    if n==2:
+    if dim==2:
         x = np.append(a,a+[0.5,0.5], axis=0) #add basisvectors to unit fcc cell (2d)
     x=lc*x
-    print("To fill the FCC lattice", len(x)-N,"particles were added for a total of", len(x),"particles.")
+    if fill==0:
+        x=x[0:num_atoms]
+    print("To fill the FCC lattice", len(x)-num_atoms,"particles were added for a total of", len(x),"particles.")
     return x, len(x)
 
 
@@ -240,9 +248,51 @@ def init_velocity(num_atoms, temp, dim):
         Array of particle velocities
     """    
     sigma = (k_B/eps) * temp
-    return np.random.normal(0, sigma, (num_atoms, dim))
+    return np.random.normal(0, sigma, (num_atoms, dim)), sigma
 
-def rescale_factor(temp, kinetic_energy, num_atoms, i):
-    E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
-    print(i, E_kin, kinetic_energy)
-    return np.sqrt(E_kin / kinetic_energy)    
+def specific_heat(T,num_atoms):
+    '''
+    Calculates specific heat under constant volume of the simulated gas.
+    
+    Parameters
+    ----------
+    T : np.ndarray
+        kinetic energy
+    num_atoms : int
+        The total number of simulated atoms
+
+    Returns
+    -------
+    Cv : float
+        specific heat of the gas under constant volume condition'''
+    
+    mean=np.mean(T)
+    fluct=np.mean(T**2)-mean**2
+    Cv=((1-(3*num_atoms*fluct)/(2*mean))*(2/(3*num_atoms)))**-1
+    return(Cv)
+
+def mean_squared_displacement(x, box_dim):
+    
+    '''
+    Calculates the mean squared displacement on each atom and the average. The first timestep is the reference position for the calculation.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Positions of all particles for all timesteps
+    box_dim : np.ndarray
+        Linear size of the domain
+        
+    Returns
+    -------
+    MSD : np.ndarray
+        MSD(t) for all individual particles
+    ASMD: np.ndarray
+        Averaged MSD(t) over all particles
+    '''
+    D=x[1:len(x)]-x[0] #Calculate difference compared to its initial position
+    D = np.where(D > 0.9*box_dim , D - box_dim, D) #makes sure that periodic boundary conditions dont let the MSD jump
+    D = np.where(D < -0.9*box_dim , D + box_dim, D)
+    MSD = np.sum(np.power(D,2), axis=2)
+    AMSD = np.sum(MSD,1)/x.shape[1]
+    return MSD, AMSD

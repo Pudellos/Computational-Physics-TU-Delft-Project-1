@@ -77,15 +77,27 @@ However, when we use the Verlet method, the total energy barely increases. The i
 
 3) The code has been reorganized, it has been split into two files: skeleton_ours.py which runs 'behind the scenes' and simulation.py which is the file where the simulation happens. Run simulation.py as a python notebook to simulate the gas under chosen conditions.
 
-4) Velocity distribution is shown to be random (obeying Maxwell-Boltzmann). It's only visible for a large nnumber of atoms, eg.1000.
-
-![alt text](Figures-animations/1000_atoms_velocity_distribution.jpg "Title Text")
 
 
 
 ## Week 4
-(due 7 March 2021, 23:59)
+1) Added a function that can make an FCC lattice for a given amount of particles, box size and number of dimensions. It can also fill up the FCC lattice completely by adding extra particles.
 
+2) Added a function calculates the individual MSD's and the average MSD of all particles. Periodic boundary conditions were considered. For a very high density of particles where the interactions are relevant we can see linear behaviour of the average MSD. (Here the parameters are: dim = 3, num_tsteps = 1000, num_atoms = 500, box_dim = 10, temp=100 and timestep = 0.0004)
+
+![alt text](Figures-animations/Linear behaviour MSD.png "Title Text")
+
+3) The MSD calculation also shows parabollic behaviour for lower densities and smaller forces. Here the MSD was calulated for a much lower particle density and the lenard jones force was multiplied by a factor 10^-10 to simulate a gas without collisions. Then kT/m can be calculated in 2 different ways, as the standard deviation of the velocity distribution (sigma^2 = 0.6967650591832241) and the prefactor (p[0]/3=0.6868840872281853) of the parabolla which was fitted to the MSD. The values are very close to eachother confirms that everything is working properly. The parameters were: dim = 3, num_tsteps = 1000, num_atoms = 70, box_dim = 100000, temp=100 and timestep = 0.0004.
+
+![alt text](Figures-animations/Parabollic behaviour of the MSD.png "Title Text")
+
+4) Added the rescaling of the velocities to get to the target temperature. In the Figure below you can see the rescaling in the total energy, and when the desired temperature is reached, the rescaling stops (total energy remains constant). The rescaling is done by comparing the kinetic energy that should be there (equipartion) vs. the actual mean kinetic energy. 
+
+![alt text](Figures-animations/rescaling.png "Title Text")
+
+5) Velocity distribution is shown to be random (obeying Maxwell-Boltzmann). It's only visible for a large nnumber of atoms, eg.1000. The initial velocity function now also takes a temperature parameter and calculates the corresponding Maxwell-Boltzmann distribution.
+
+![alt text](Figures-animations/1000_atoms_velocity_distribution.jpg "Title Text")
 
 ## Week 5
 (due 14 March 2021, 23:59)
