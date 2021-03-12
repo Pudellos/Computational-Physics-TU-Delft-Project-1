@@ -62,7 +62,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
     r[0] = rel_dist[1, 0]
 
     var = 0
-
+    aftert=0
     for i in range(1, num_tsteps):
         
         # Verlet method to calculate new position and velocity
@@ -95,11 +95,11 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
                 if(np.abs(E_kin - E_avg) < 0.05):
                     var = 1
                     print("Temperature is: ", E_avg / ((num_atoms - 1) * (3 / 2) * (k_B / eps)) )
-
+                    aftert = i
         #print("x[%s]: \n" %i, x[i])
         #print("v[%s]: \n" %i, v[i])
 
-    return (x, v, T, U, r)
+    return (x, v, T, U, r, aftert)
 
 def atomic_distances(pos, box_dim):
     """
@@ -290,9 +290,17 @@ def mean_squared_displacement(x, box_dim):
     ASMD: np.ndarray
         Averaged MSD(t) over all particles
     '''
-    D=x[1:len(x)]-x[0] #Calculate difference compared to its initial position
-    D = np.where(D > 0.9*box_dim , D - box_dim, D) #makes sure that periodic boundary conditions dont let the MSD jump
-    D = np.where(D < -0.9*box_dim , D + box_dim, D)
+    TSD1 = x[1:len(x)]-x[0:len(x)-1]
+    TSD1 = np.where(TSD1 > 0.9*box_dim , TSD1 - box_dim, TSD1)
+    TSD1 = np.where(TSD1 < -0.9*box_dim , TSD1 + box_dim, TSD1)
+    D = np.cumsum(TSD1, axis=0)
+    '''
+    D = x[1:len(x)]-x[0] #Calculate difference compared to its initial position
+    #D = np.where((D > 0.9*box_dim), D - box_dim, D) #makes sure that periodic boundary conditions dont let the MSD jump
+    #D = np.where((D < -0.9*box_dim), D + box_dim, D)
+    D = np.where((D > 0.9*box_dim) & TSD1 == -1, D - box_dim, D) #makes sure that periodic boundary conditions dont let the MSD jump
+    D = np.where((D < -0.9*box_dim) & TSD2 == 1, D + box_dim, D)
+    '''
     MSD = np.sum(np.power(D,2), axis=2)
     AMSD = np.sum(MSD,1)/x.shape[1]
-    return MSD, AMSD
+    return MSD, AMSD, D, TSD1
