@@ -106,3 +106,9 @@ However, when we use the Verlet method, the total energy barely increases. The i
 Below you can see we fitted the curve $`e^{-t/\tau}`$, where we got $`\tau = 46.3`$. This estimated value is very close to the real value. The diffence is caused by the limited amount of time steps we used.
 
 ![alt text](Figures-animations/autocorrelation_test2.png "Title Text")
+
+2) The same procedure, as in 1),  was used for the kinetic energy, the results can be seen below. The fit isn't a very nice exponential, but that is because the process isn't perfectly Gaussian. (32 particles, T = 100, box_dim = 20)
+![alt text](Figures-animations/autocorrrelation_kinetic_energy1.png "Title Text")
+![alt text](Figures-animations/autocorrrelation_kinetic_energy2.png "Title Text")
+
+The calculated mean kinetic energy was $`\langle K \rangle = 39.956`$ with error $`\sigma_K = 0.013`$, here the fitted value of $`\tau`$ was used to calculate the error. 
