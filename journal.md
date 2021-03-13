@@ -100,4 +100,9 @@ However, when we use the Verlet method, the total energy barely increases. The i
 ![alt text](Figures-animations/1000_atoms_velocity_distribution.jpg "Title Text")
 
 ## Week 5
-(due 14 March 2021, 23:59)
+1) We implemented the autocorrelation function and tested it with a correlation random Gaussian distribution. We used the same variables ($`\tau = 50`$ and $`n = 20000`$)
+
+![alt text](Figures-animations/autocorrelation_test1.png "Title Text")
+Below you can see we fitted the curve $`e^{-t/\tau}`$, where we got $`\tau = 46.3`$. This estimated value is very close to the real value. The diffence is caused by the limited amount of time steps we used.
+
+![alt text](Figures-animations/autocorrelation_test2.png "Title Text")
