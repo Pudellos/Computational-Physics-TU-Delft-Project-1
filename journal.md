@@ -112,3 +112,5 @@ Below you can see we fitted the curve $`e^{-t/\tau}`$, where we got $`\tau = 46.
 ![alt text](Figures-animations/autocorrrelation_kinetic_energy2.png "Title Text")
 
 The calculated mean kinetic energy was $`\langle K \rangle = 39.956`$ with error $`\sigma_K = 0.013`$, here the fitted value of $`\tau`$ was used to calculate the error. 
+
+3) intro and 70% of theory of the report are written. Still need to choose observables but so far we had specific heat and diffusion calculated. Now errors need to be added to those. Efficiency of the code is good in a sense that we use numpy speed ups wherever possible. The code needs to still be examined to check if no duplicate calculations occur (after error calculations are completed)
