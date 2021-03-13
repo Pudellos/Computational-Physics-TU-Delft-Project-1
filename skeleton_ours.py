@@ -45,7 +45,6 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
     x = np.ndarray(shape = (num_tsteps, num_atoms, dim)) # Stores velocities for every timestep
     v = np.ndarray(shape = (num_tsteps, num_atoms, dim)) # Stores positions for every timestep
     F = np.ndarray(shape = (num_tsteps, num_atoms, dim)) # Stores force for every timestep
-    r = np.zeros(num_tsteps)
 
     T = np.zeros(num_tsteps) # Kinetic energy
     U = np.zeros(num_tsteps) # Potential energy    
@@ -59,17 +58,15 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
     U[0] = potential_energy(rel_dist)
     T[0] = kinetic_energy(v[0])
     F[0] = lj_force(rel_pos, rel_dist, dim)
-    r[0] = rel_dist[1, 0]
 
-    var = 0
-    aftert=0
+    rescale = 0
+    eq_time = 0
     for i in range(1, num_tsteps):
         
         # Verlet method to calculate new position and velocity
         x[i] = x[i - 1] + v[i - 1] * h + (h**2 / 2) * F[i - 1]
         rel_pos, rel_dist = atomic_distances(x[i], box_dim)
         F[i] = lj_force(rel_pos, rel_dist, dim)
-        r[i] = rel_dist[1, 0]
         v[i] = v[i - 1] + (h / 2) * ( F[i] + F[i - 1] )
         
         #Euler method to calculate new position and velocity
@@ -86,21 +83,19 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
         U[i] = potential_energy(rel_dist)
     
         # After c steps check if the target temperature is reached, otherwise rescale velocities
-        c = 500         
-        if((i % c) == 0 and var == 0): 
+        c = 20         
+        if((i % c) == 0 and rescale == 0): 
                 E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
                 E_avg = np.mean(T[i-c:i])
                 L = np.sqrt(E_kin/ E_avg) 
                 v[i] = L * v[i]
                 
                 if(np.abs(E_kin - E_avg) < 0.05):
-                    var = 1
                     print("Temperature is: ", E_avg / ((num_atoms - 1) * (3 / 2) * (k_B / eps)) )
-                    aftert = i
-        #print("x[%s]: \n" %i, x[i])
-        #print("v[%s]: \n" %i, v[i])
+                    rescale = 1                    
+                    eq_time = i
 
-    return (x, v, T, U, r, aftert)
+    return (x[eq_time:], v[eq_time:], T[eq_time:], U[eq_time:])
 
 def atomic_distances(pos, box_dim):
     """
@@ -192,7 +187,6 @@ def fcc_lattice(num_atoms, box_dim, dim, fill):
     print("To fill the FCC lattice", len(x)-num_atoms, "particles were added for a total of", len(x),"particles.")
     return x, len(x)
 
-
 def kinetic_energy(vel):
     """
     Computes the kinetic energy of an atomic system.
@@ -210,7 +204,6 @@ def kinetic_energy(vel):
     T = np.linalg.norm(vel, axis=1)
     T = 1/2 * np.power(T, 2)
     return np.sum(T)
-
 
 def potential_energy(rel_dist):
     """
@@ -251,7 +244,7 @@ def init_velocity(num_atoms, temp, dim):
     sigma = (k_B/eps) * temp
     return np.random.normal(0, sigma, (num_atoms, dim)), sigma
 
-def specific_heat(T,num_atoms):
+def specific_heat(T, num_atoms):
     '''
     Calculates specific heat under constant volume of the simulated gas.
     
@@ -268,9 +261,9 @@ def specific_heat(T,num_atoms):
         specific heat of the gas under constant volume condition'''
     
     mean = np.mean(T)
-    fluct = np.mean(T**2) - mean**2
-    Cv = ( (1 - (3 * num_atoms * fluct) / (2 * mean)) * (2 / (3 * num_atoms)))**(-1)
-    return (Cv)
+    fluct = np.var(T)
+    Cv = 3 * num_atoms / (2 - 3 * num_atoms * (fluct / mean))
+    return Cv
 
 def mean_squared_displacement(x, box_dim):
     
@@ -323,9 +316,10 @@ def autocorrelation(A):
     Xi : array of the autocorrelation function(t)
     '''
     N = len(A)
-    Xi = np.zeros(N)
+    Xi = np.zeros(N - 1)
 
     for t in range(N - 1):
+        #print("%s/%s" %(t,N))
         t1 = (N - t) * sum( A[0:(N - t)] * A[t:N]) #term 1
         t2 = sum(A[0:(N - t)]) * sum(A[t:N]) #term 2
         t3 = np.sqrt( (N - t) * sum(A[0:(N - t)]**2) - sum(A[0:(N - t)])**2 ) #term 3
