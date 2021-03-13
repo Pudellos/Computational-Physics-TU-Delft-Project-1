@@ -85,6 +85,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
         T[i] = kinetic_energy(v[i])
         U[i] = potential_energy(rel_dist)
     
+        # After c steps check if the target temperature is reached, otherwise rescale velocities
         c = 500         
         if((i % c) == 0 and var == 0): 
                 E_kin = (num_atoms - 1) * (3 / 2) * (k_B / eps) * temp
@@ -172,23 +173,23 @@ def fcc_lattice(num_atoms, box_dim, dim, fill):
     len(x) : int
         Number of particles in the fcc lattice
     """
-    ppuc=2*dim-2 #particles per unit cell (4 in 3d and 2 in 2d)
-    UC = num_atoms/ppuc #total number of unit cells needed
-    AUC = np.ceil(UC**(1/dim)) #number of unit cells per axis
-    lc = box_dim/AUC #lattice constant
-    L=np.arange(AUC)
+    ppuc = 2 * dim - 2 #particles per unit cell (4 in 3d and 2 in 2d)
+    UC = num_atoms / ppuc #total number of unit cells needed
+    AUC = np.ceil(UC**(1 / dim)) #number of unit cells per axis
+    lc = box_dim / AUC #lattice constant
+    L = np.arange(AUC)
     comb = [p for p in itertools.product(L, repeat=dim)] #all possible permutation to fill the whole lattice (all unit cells once)
     a = np.asarray(comb)
-    if dim==3:
+    if dim == 3:
         x = np.append(a,a+[0.5,0.5,0], axis=0) #add basisvectors to unit fcc cell (3d)
         x = np.append(x,a+[0.5,0,0.5], axis=0)
         x = np.append(x,a+[0,0.5,0.5], axis=0)
-    if dim==2:
+    if dim == 2:
         x = np.append(a,a+[0.5,0.5], axis=0) #add basisvectors to unit fcc cell (2d)
-    x=lc*x
-    if fill==0:
+    x = lc * x
+    if fill == 0:
         x=x[0:num_atoms]
-    print("To fill the FCC lattice", len(x)-num_atoms,"particles were added for a total of", len(x),"particles.")
+    print("To fill the FCC lattice", len(x)-num_atoms, "particles were added for a total of", len(x),"particles.")
     return x, len(x)
 
 
@@ -266,10 +267,10 @@ def specific_heat(T,num_atoms):
     Cv : float
         specific heat of the gas under constant volume condition'''
     
-    mean=np.mean(T)
-    fluct=np.mean(T**2)-mean**2
-    Cv=((1-(3*num_atoms*fluct)/(2*mean))*(2/(3*num_atoms)))**-1
-    return(Cv)
+    mean = np.mean(T)
+    fluct = np.mean(T**2) - mean**2
+    Cv = ( (1 - (3 * num_atoms * fluct) / (2 * mean)) * (2 / (3 * num_atoms)))**(-1)
+    return (Cv)
 
 def mean_squared_displacement(x, box_dim):
     
@@ -290,9 +291,9 @@ def mean_squared_displacement(x, box_dim):
     ASMD: np.ndarray
         Averaged MSD(t) over all particles
     '''
-    TSD1 = x[1:len(x)]-x[0:len(x)-1]
-    TSD1 = np.where(TSD1 > 0.9*box_dim , TSD1 - box_dim, TSD1)
-    TSD1 = np.where(TSD1 < -0.9*box_dim , TSD1 + box_dim, TSD1)
+    TSD1 = x[1:len(x)] - x[0:len(x)-1]
+    TSD1 = np.where(TSD1 >  0.9 * box_dim , TSD1 - box_dim, TSD1)
+    TSD1 = np.where(TSD1 < -0.9 * box_dim , TSD1 + box_dim, TSD1)
     D = np.cumsum(TSD1, axis=0)
     '''
     D = x[1:len(x)]-x[0] #Calculate difference compared to its initial position
@@ -302,5 +303,73 @@ def mean_squared_displacement(x, box_dim):
     D = np.where((D < -0.9*box_dim) & TSD2 == 1, D + box_dim, D)
     '''
     MSD = np.sum(np.power(D,2), axis=2)
-    AMSD = np.sum(MSD,1)/x.shape[1]
+    AMSD = np.sum(MSD,1) / x.shape[1]
     return MSD, AMSD, D, TSD1
+
+def func(x, b):
+    return np.exp(- b * x)
+
+def autocorrelation(A):    
+    '''
+    Calculates the autocorrelation function for a given dataset
+
+    Parameters
+    ----------
+    A : np.ndarray
+        The data to be correlated
+        
+    Returns
+    -------
+    Xi : array of the autocorrelation function(t)
+    '''
+    N = len(A)
+    Xi = np.zeros(N)
+
+    for t in range(N - 1):
+        t1 = (N - t) * sum( A[0:(N - t)] * A[t:N]) #term 1
+        t2 = sum(A[0:(N - t)]) * sum(A[t:N]) #term 2
+        t3 = np.sqrt( (N - t) * sum(A[0:(N - t)]**2) - sum(A[0:(N - t)])**2 ) #term 3
+        t4 = np.sqrt( (N - t) * sum(A[t:N]**2) - sum(A[t:N])**2 ) #term 4
+
+        Xi[t] = ( t1 - t2 ) / ( t3 * t4 ) 
+    return Xi
+
+def normal_autocorr(mu, sigma, tau, N):
+    """Generates an autocorrelated sequence of Gaussian random numbers.
+    
+    Each of the random numbers in the sequence of length `N` is distributed
+    according to a Gaussian with mean `mu` and standard deviation `sigma` (just
+    as in `numpy.random.normal`, with `loc=mu` and `scale=sigma`). Subsequent
+    random numbers are correlated such that the autocorrelation function
+    is on average `exp(-n/tau)` where `n` is the distance between random
+    numbers in the sequence.
+    
+    This function implements the algorithm described in
+    https://www.cmu.edu/biolphys/deserno/pdf/corr_gaussian_random.pdf
+    
+    Parameters
+    ----------
+    
+    mu: float
+        mean of each Gaussian random number
+    sigma: float
+        standard deviation of each Gaussian random number
+    tau: float
+        autocorrelation time
+    N: int
+        number of desired random numbers
+    
+    Returns:
+    --------
+    sequence: numpy array
+        array of autocorrelated random numbers
+    """
+    f = np.exp(-1./tau)
+    
+    sequence = np.zeros(shape=(N,))
+    
+    sequence[0] = np.random.normal(0, 1)
+    for i in range(1, N):
+        sequence[i] = f * sequence[i-1] + np.sqrt(1 - f**2) * np.random.normal(0, 1)
+    
+    return mu + sigma * sequence
