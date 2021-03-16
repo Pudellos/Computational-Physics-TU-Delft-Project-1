@@ -241,7 +241,7 @@ def init_velocity(num_atoms, temp, dim):
     vel_vec : np.ndarray
         Array of particle velocities
     """    
-    sigma = (k_B/eps) * temp
+    sigma = ((k_B/eps) * temp)**0.5
     return np.random.normal(0, sigma, (num_atoms, dim)), sigma
 
 def specific_heat(T, num_atoms):
@@ -288,13 +288,6 @@ def mean_squared_displacement(x, box_dim):
     TSD1 = np.where(TSD1 >  0.9 * box_dim , TSD1 - box_dim, TSD1)
     TSD1 = np.where(TSD1 < -0.9 * box_dim , TSD1 + box_dim, TSD1)
     D = np.cumsum(TSD1, axis=0)
-    '''
-    D = x[1:len(x)]-x[0] #Calculate difference compared to its initial position
-    #D = np.where((D > 0.9*box_dim), D - box_dim, D) #makes sure that periodic boundary conditions dont let the MSD jump
-    #D = np.where((D < -0.9*box_dim), D + box_dim, D)
-    D = np.where((D > 0.9*box_dim) & TSD1 == -1, D - box_dim, D) #makes sure that periodic boundary conditions dont let the MSD jump
-    D = np.where((D < -0.9*box_dim) & TSD2 == 1, D + box_dim, D)
-    '''
     MSD = np.sum(np.power(D,2), axis=2)
     AMSD = np.sum(MSD,1) / x.shape[1]
     return MSD, AMSD, D, TSD1
