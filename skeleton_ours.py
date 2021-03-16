@@ -91,7 +91,7 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
                 v[i] = L * v[i]
                 
                 if(np.abs(E_kin - E_avg) < 0.05):
-                    print("Temperature is: ", E_avg / ((num_atoms - 1) * (3 / 2) * (k_B / eps)) )
+                    #print("Temperature is: ", E_avg / ((num_atoms - 1) * (3 / 2) * (k_B / eps)) )
                     rescale = 1                    
                     eq_time = i
 
@@ -262,7 +262,7 @@ def specific_heat(T, num_atoms):
     
     mean = np.mean(T)
     fluct = np.var(T)
-    Cv = 3 * num_atoms / (2 - 3 * num_atoms * (fluct / mean))
+    Cv = 3 * num_atoms / (2 - 3 * num_atoms * (fluct / mean**2))
     return Cv
 
 def mean_squared_displacement(x, box_dim):

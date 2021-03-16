@@ -8,7 +8,7 @@ import time
 from scipy.optimize import curve_fit
 
 dim = 3
-num_tsteps = 2000
+num_tsteps = 4000
 num_atoms = 16
 box_dim = 10
 timestep = 0.004
@@ -20,41 +20,41 @@ init_vel, sigma = init_velocity(num_atoms, temp, dim)
 init_pos = x
 x, v, K, U = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, temp)
 
-MSD, AMSD, D, TSD1 = mean_squared_displacement(x, box_dim)
-print("done")
-AC = autocorrelation(AMSD)
-print(" AC done")
+if(False):
+    MSD, AMSD, D, TSD1 = mean_squared_displacement(x, box_dim)
+    print("done")
+    AC = autocorrelation(AMSD)
+    print(" AC done")
 
-plt.subplot(121)
-plt.plot(AMSD)
-plt.ylabel(r'$\langle\Delta^2x(t)\rangle$')
-plt.xlabel(r'Time $t$')
+    plt.subplot(121)
+    plt.plot(AMSD)
+    plt.ylabel(r'$\langle\Delta^2x(t)\rangle$')
+    plt.xlabel(r'Time $t$')
 
-plt.subplot(122)
-plt.plot(AC)
-plt.ylabel(r'$\chi(\tau)$')
-plt.xlabel(r'Time lag $\tau$')
-plt.show()
+    plt.subplot(122)
+    plt.plot(AC)
+    plt.ylabel(r'$\chi(\tau)$')
+    plt.xlabel(r'Time lag $\tau$')
+    plt.show()
 
-"""
-#np.random.seed(1)
-T = np.arange(210, 310, step = 5)
-Cv = np.zeros(len(T))
-for i in range(len(T)):
-    x, num_atoms = fcc_lattice(num_atoms, box_dim, dim, fill)
-    init_vel, sigma = init_velocity(num_atoms, T[i], dim)
-    init_pos = x
-    x, v, K, U = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, T[i])
+# Code to calculate heat capacity
+if(True):
+    #np.random.seed(1)
+    Cv = np.zeros(100)
+    for i in range(100):
+        x, num_atoms = fcc_lattice(num_atoms, box_dim, dim, fill)
+        init_vel, sigma = init_velocity(num_atoms, temp, dim)
+        init_pos = x
+        x, v, K, U = simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, temp)
 
-    Cv[i] = specific_heat(K, num_atoms)
-    print('Specific heat Cv:', Cv[i])
+        plt.plot(K)
+        Cv[i] = specific_heat(K, num_atoms)
+        print('Specific heat Cv:', Cv[i])
 
-plt.plot(T, Cv)
-plt.ylabel(r"Specific heat $C_V$")
-plt.xlabel(r"Temperature $T$ in Kelvin")
-plt.show()
-"""  
-
+    print(np.mean(Cv))
+    print(np.std(Cv))
+    plt.show()
+    
 """
 plt.figure(2)
 t = timestep * np.arange(0,len(U))
@@ -92,7 +92,6 @@ if(False):
     plt.plot(t, Xi)
     
     plt.show()
-
 
 # Animation and plotting stuff
 if(dim == 2): # The animation only works for 2 dimensions.
