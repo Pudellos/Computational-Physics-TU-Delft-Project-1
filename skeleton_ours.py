@@ -118,7 +118,7 @@ def atomic_distances(pos, box_dim):
     rel_pos = pos[:, np.newaxis] - pos
 
     rel_pos = np.where(rel_pos < (-box_dim / 2), rel_pos + box_dim, rel_pos) #distances smaller than -size/2 get + size term
-    rel_pos = np.where(rel_pos > ( box_dim / 2), rel_pos - box_dim, rel_pos)  #distances larger than size/2 get - size ter
+    rel_pos = np.where(rel_pos > ( box_dim / 2), rel_pos - box_dim, rel_pos)  #distances larger than size/2 get - size term
 
     rel_dist = np.linalg.norm(rel_pos, axis=2)    
     return (rel_pos, rel_dist)
@@ -284,13 +284,13 @@ def mean_squared_displacement(x, box_dim):
     ASMD: np.ndarray
         Averaged MSD(t) over all particles
     '''
-    TSD1 = x[1:len(x)] - x[0:len(x)-1]
-    TSD1 = np.where(TSD1 >  0.9 * box_dim , TSD1 - box_dim, TSD1)
+    TSD1 = x[1:len(x)] - x[0:len(x)-1] #difference for each timestep
+    TSD1 = np.where(TSD1 >  0.9 * box_dim , TSD1 - box_dim, TSD1) #removes jumps because of periodic BC
     TSD1 = np.where(TSD1 < -0.9 * box_dim , TSD1 + box_dim, TSD1)
-    D = np.cumsum(TSD1, axis=0)
+    D = np.cumsum(TSD1, axis=0) #displacement(t)
     MSD = np.sum(np.power(D,2), axis=2)
     AMSD = np.sum(MSD,1) / x.shape[1]
-    return MSD, AMSD, D, TSD1
+    return MSD, AMSD
 
 def func(x, b):
     return np.exp(- b * x)
