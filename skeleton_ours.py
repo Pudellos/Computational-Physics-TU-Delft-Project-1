@@ -32,20 +32,25 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
         Duration of a single simulation step
     box_dim : float
         Dimensions of the simulation box
+    num_atoms : int
+        The total number of atoms in the simulation
+    dim : int 
+        The dimension of the simulation box
+    temp : float
+        The target temperature of the simulation
 
     Returns
     -------
-    Any quantities or observables that you wish to study.
     x : all positions
     v : all velocities
-    E : energy at every time step
-    p : all momenta
+    T : total kinetic energy for every timestep
+    U : total potential energy for every timestep
     """
+
     h = timestep # Shorther way to deal with timestep :)
     x = np.ndarray(shape = (num_tsteps, num_atoms, dim)) # Stores velocities for every timestep
     v = np.ndarray(shape = (num_tsteps, num_atoms, dim)) # Stores positions for every timestep
     F = np.ndarray(shape = (num_tsteps, num_atoms, dim)) # Stores force for every timestep
-
     T = np.zeros(num_tsteps) # Kinetic energy
     U = np.zeros(num_tsteps) # Potential energy    
     
@@ -53,14 +58,15 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
     x[0] = init_pos
     v[0] = init_vel
 
-    # Calculate the energies and force for thwe first timestep
+    # Calculate the energies and force for the first timestep
     rel_pos, rel_dist = atomic_distances(x[0], box_dim)
     U[0] = potential_energy(rel_dist)
     T[0] = kinetic_energy(v[0])
     F[0] = lj_force(rel_pos, rel_dist, dim)
 
-    rescale = 0
-    eq_time = 0
+    rescale = 0 # Flag for rescaling
+    eq_time = 0 # Gives the time where the simulation starts (after equilibrium)
+
     for i in range(1, num_tsteps):
         
         # Verlet method to calculate new position and velocity
@@ -69,10 +75,6 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
         F[i] = lj_force(rel_pos, rel_dist, dim)
         v[i] = v[i - 1] + (h / 2) * ( F[i] + F[i - 1] )
         
-        #Euler method to calculate new position and velocity
-        #x[i] = x[i - 1] + v[i - 1] * h
-        #v[i] = v[i - 1] + F * h
-
         # Periodic boundary conditions
         for d in range(dim):
             x[i, :, d] = np.where( x[i, :, d] < box_dim  , x[i, :, d], x[i, :, d] % box_dim)
@@ -91,7 +93,6 @@ def simulate(init_pos, init_vel, num_tsteps, timestep, box_dim, num_atoms, dim, 
                 v[i] = L * v[i]
                 
                 if(np.abs(E_kin - E_avg) < 0.05):
-                    #print("Temperature is: ", E_avg / ((num_atoms - 1) * (3 / 2) * (k_B / eps)) )
                     rescale = 1                    
                     eq_time = i
 
@@ -117,6 +118,7 @@ def atomic_distances(pos, box_dim):
     """
     rel_pos = pos[:, np.newaxis] - pos
 
+    # Minimal image convention
     rel_pos = np.where(rel_pos < (-box_dim / 2), rel_pos + box_dim, rel_pos) #distances smaller than -size/2 get + size term
     rel_pos = np.where(rel_pos > ( box_dim / 2), rel_pos - box_dim, rel_pos)  #distances larger than size/2 get - size term
 
@@ -134,10 +136,12 @@ def lj_force(rel_pos, rel_dist, dim):
         Relative particle positions as obtained from atomic_distances
     rel_dist : np.ndarray
         Relative particle distances as obtained from atomic_distances
+    dim : int
+        The dimension of the simulation box
 
     Returns
     -------
-    np.ndarray
+    F : np.ndarray
         The net force acting on particle i due to all other particles
     """
     r = np.array([rel_dist]*dim).transpose()
@@ -159,8 +163,9 @@ def fcc_lattice(num_atoms, box_dim, dim, fill):
     dim : int
         The number of dimensions we are looking at
     fill: int
-        If fill=0 the fcc lattice will only use num_atoms particles,
+        If fill = 0 the fcc lattice will only use num_atoms particles,
         If fill is not 0 the fcc lattice will be completely filled
+
     Returns
     -------
     x : np.ndarray
@@ -175,15 +180,19 @@ def fcc_lattice(num_atoms, box_dim, dim, fill):
     L = np.arange(AUC)
     comb = [p for p in itertools.product(L, repeat=dim)] #all possible permutation to fill the whole lattice (all unit cells once)
     a = np.asarray(comb)
+
     if dim == 3:
         x = np.append(a,a+[0.5,0.5,0], axis=0) #add basisvectors to unit fcc cell (3d)
         x = np.append(x,a+[0.5,0,0.5], axis=0)
         x = np.append(x,a+[0,0.5,0.5], axis=0)
+
     if dim == 2:
         x = np.append(a,a+[0.5,0.5], axis=0) #add basisvectors to unit fcc cell (2d)
     x = lc * x
+
     if fill == 0:
         x=x[0:num_atoms]
+
     print("To fill the FCC lattice", len(x)-num_atoms, "particles were added for a total of", len(x),"particles.")
     return x, len(x)
 
@@ -234,15 +243,20 @@ def init_velocity(num_atoms, temp, dim):
     num_atoms : int
         The number of particles in the system.
     temp : float
-        The (unitless) temperature of the system.
+        The temperature of the system.
+    dim : int
+        The dimension of the simulation box
 
     Returns
     -------
     vel_vec : np.ndarray
-        Array of particle velocities
+        Array of prticle velocities
+    sigma : float
+        The std out the velocities
     """    
     sigma = ((k_B/eps) * temp)**0.5
-    return np.random.normal(0, sigma, (num_atoms, dim)), sigma
+    vel_vec = np.random.normal(0, sigma, (num_atoms, dim))
+    return vel_vec, sigma
 
 def specific_heat(T, num_atoms):
     '''
@@ -266,7 +280,6 @@ def specific_heat(T, num_atoms):
     return Cv
 
 def mean_squared_displacement(x, box_dim):
-    
     '''
     Calculates the mean squared displacement on each atom and the average. The first timestep is the reference position for the calculation.
 
@@ -292,9 +305,6 @@ def mean_squared_displacement(x, box_dim):
     AMSD = np.sum(MSD,1) / x.shape[1]
     return MSD, AMSD
 
-def func(x, b):
-    return np.exp(- b * x)
-
 def autocorrelation(A):    
     '''
     Calculates the autocorrelation function for a given dataset
@@ -312,7 +322,6 @@ def autocorrelation(A):
     Xi = np.zeros(N - 1)
 
     for t in range(N - 1):
-        #print("%s/%s" %(t,N))
         t1 = (N - t) * sum( A[0:(N - t)] * A[t:N]) #term 1
         t2 = sum(A[0:(N - t)]) * sum(A[t:N]) #term 2
         t3 = np.sqrt( (N - t) * sum(A[0:(N - t)]**2) - sum(A[0:(N - t)])**2 ) #term 3
